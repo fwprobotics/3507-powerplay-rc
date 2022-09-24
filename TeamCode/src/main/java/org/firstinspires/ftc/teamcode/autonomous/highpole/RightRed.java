@@ -4,6 +4,7 @@ import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.acmerobotics.roadrunner.drive.MecanumDrive;
+import com.acmerobotics.roadrunner.trajectory.constraints.TrajectoryVelocityConstraint;
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;;
 import com.acmerobotics.roadrunner.geometry.Pose2d;
@@ -18,6 +19,7 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
+import org.firstinspires.ftc.teamcode.drive.DriveConstants;
 import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
 import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequence;
 import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequenceBuilder;
@@ -54,18 +56,26 @@ public class RightRed extends LinearOpMode {
         readSignal();
 
         TrajectorySequence startSequence = drive.trajectorySequenceBuilder(startPose)
-                .splineToConstantHeading(new Vector2d(30, -60), Math.toRadians(0))
-        .strafeTo(new Vector2d(12, -55))
-                .lineToSplineHeading(new Pose2d(12, -24, Math.toRadians(180)))
+                //.splineToConstantHeading(new Vector2d(30, -60), Math.toRadians(0))
+                .splineToConstantHeading(new Vector2d(12, -55), Math.toRadians(0))
+        //.strafeTo(new Vector2d(12, -55))
+               // .lineToSplineHeading(new Pose2d(12, -24, Math.toRadians(180)))
+                .lineToLinearHeading(new Pose2d(12, -24, Math.toRadians(180)))
                 .build();
         TrajectorySequence toStack = drive.trajectorySequenceBuilder(startSequence.end())
-                .strafeTo(new Vector2d(12, -14))
                 .setReversed(true)
-                .splineToConstantHeading(new Vector2d(60, -12), Math.toRadians(0))
+                .lineToConstantHeading(new Vector2d(24, -14), SampleMecanumDrive.getVelocityConstraint(50, DriveConstants.MAX_ANG_VEL, DriveConstants.TRACK_WIDTH), SampleMecanumDrive.getAccelerationConstraint(30))
+
+                //.lineToConstantHeading(new Vector2d(60, -12))
+                .back(35)
 
                         .build();
+//        TrajectorySequence toStackPartTwo = drive.trajectorySequenceBuilder(toStack.end())
+//                .lineToConstantHeading(new Vector2d(60, -12))
+//                .build();
         TrajectorySequence toPole = drive.trajectorySequenceBuilder(toStack.end())
-                .splineToConstantHeading(new Vector2d(12, -24), Math.toRadians(-120))
+                .forward(35)
+                .lineToConstantHeading(new Vector2d(12, -24))
                         .build();
         TrajectorySequence toLeftZone = drive.trajectorySequenceBuilder(toPole.end())
                 .splineToConstantHeading(new Vector2d(12, -12), Math.toRadians(0))
@@ -83,7 +93,8 @@ public class RightRed extends LinearOpMode {
         drive.followTrajectorySequence(startSequence);
         sleep(1000); //simulated cone dropping offing
         //TODO: Open claw to drop cone
-
+//drive.followTrajectorySequence(toStack);
+//drive.followTrajectorySequence(toStackPartTwo);
         //this repeats until there is not enough time left to complete next cycle
         while (matchTimer.seconds() < 20 && opModeIsActive()) {
             //TODO: Move lift to stack pos
@@ -95,7 +106,7 @@ public class RightRed extends LinearOpMode {
             sleep(1000);
 
         }
-//        //TODO: lower lift retract arm
+        //TODO: lower lift retract arm
         switch (signalZone) {
             case LEFT:
                 drive.followTrajectorySequence(toLeftZone);
