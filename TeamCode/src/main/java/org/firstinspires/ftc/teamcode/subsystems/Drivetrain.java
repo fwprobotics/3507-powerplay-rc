@@ -31,6 +31,8 @@ public class Drivetrain {
     public BNO055IMU    imu;
 
     private boolean inputButtonPressed;
+    public ToggleButton fieldRelativeDrive;
+
 
     private static final MotorConfigurationType MOTOR_CONFIG =
             MotorConfigurationType.getMotorType(RevRobotics20HdHexMotor.class);
@@ -52,6 +54,7 @@ public class Drivetrain {
         l = Input;
         realTelemetry = telemetry;
         realTelemetry.setAutoClear(true);
+        fieldRelativeDrive = new ToggleButton(true);
 
         backLeftDrive = hardwareMap.dcMotor.get("backLeftDrive");
         backRightDrive = hardwareMap.dcMotor.get("backRightDrive");
@@ -88,55 +91,82 @@ public class Drivetrain {
     }
 
     //This is the teleop drive formulas
-    public void JoystickMovement(double leftStickY, double leftStickX, double rightStickX, double rightstickY, boolean slowModeControl){
+    public void JoystickMovement(double leftStickY, double leftStickX, double rightStickX, double rightstickY, boolean slowModeControl, boolean fieldRelativeToggle){
 
 //        double RightStickAngle;
-        double LeftStickAngle;
+
+        //toggles between field relative drive(aka forward is your forward(default) vs forward is robot forward)
+        fieldRelativeDrive.toggle(fieldRelativeToggle);
+        double frontRightVal;
+        double frontLeftVal;
+        double backLeftVal;
+        double backRightVal;
+
         double slowModeMult = slowModeControl ? 0.3 : 1;
 
-        //Angles measured from (0,1) and go clockwise (I know this stinks)
+        if (fieldRelativeDrive.state()) {
 
-        if (leftStickX == 0 && leftStickY == 0) {
-            LeftStickAngle = 0;
-        } else {
-            LeftStickAngle = Math.atan2(leftStickY, -leftStickX)-Math.PI/4;
-        }
+            double LeftStickAngle;
+
+
+            //Angles measured from (0,1) and go clockwise (I know this stinks)
+
+            if (leftStickX == 0 && leftStickY == 0) {
+                LeftStickAngle = 0;
+            } else {
+                LeftStickAngle = Math.atan2(leftStickY, -leftStickX) - Math.PI / 4;
+            }
 //        if (rightStickX == 0) {
 //             RightStickAngle = 0;
 //        } else {
 //            RightStickAngle = Math.atan2(rightstickY, rightStickX);
 //        }
-        double RobotAngle = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.RADIANS).firstAngle;
-        double NewLeftAngle = LeftStickAngle - RobotAngle;
+            double RobotAngle = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.RADIANS).firstAngle;
+            double NewLeftAngle = LeftStickAngle - RobotAngle;
 //        double NewRightAngle = RightStickAngle - RobotAngle;
-        //Sets motor values based on adding and subtracting joystick values
-        double LeftX = Math.cos(NewLeftAngle) * Math.sqrt(Math.pow(leftStickY, 2.0) + Math.pow(leftStickX, 2.0));
-        double LeftY = Math.sin(NewLeftAngle) * Math.sqrt(Math.pow(leftStickY, 2.0) + Math.pow(leftStickX, 2.0));
+            //Sets motor values based on adding and subtracting joystick values
+            double LeftX = Math.cos(NewLeftAngle) * Math.sqrt(Math.pow(leftStickY, 2.0) + Math.pow(leftStickX, 2.0));
+            double LeftY = Math.sin(NewLeftAngle) * Math.sqrt(Math.pow(leftStickY, 2.0) + Math.pow(leftStickX, 2.0));
 //        double RightX = Math.cos(NewRightAngle) * Math.sqrt(Math.pow(rightStickX, 2.0) + Math.pow(rightstickY, 2.0));
 
-        double RightX = rightStickX;
-        double frontLeftVal = (- RightX) + LeftX;
-        double frontRightVal = (LeftY + RightX) ;
-        double backLeftVal = ((LeftY - RightX) );
-        double backRightVal = (( RightX) + LeftX);
+            double RightX = rightStickX;
+            frontLeftVal = (-RightX) + LeftX;
+            frontRightVal = (LeftY + RightX);
+            backLeftVal = ((LeftY - RightX));
+            backRightVal = ((RightX) + LeftX);
 
+            realTelemetry.addData("left stick angle", LeftStickAngle);
+//        realTelemetry.addData("right stick angle", RightStickAngle);
+            realTelemetry.addData("imu angle 1", imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.RADIANS).firstAngle);
+            realTelemetry.addData("imu angle 2", imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.RADIANS).firstAngle);
+            realTelemetry.addData("imu angle 3", imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.RADIANS).firstAngle);
+            realTelemetry.addData("FLV", frontLeftVal);
+            realTelemetry.addData("LeftX", LeftX);
+            realTelemetry.addData("RightX", RightX);
+            realTelemetry.addData("LeftY", LeftY);
+            realTelemetry.addData("Robot Angle", RobotAngle);
 
+        } else {
+
+            double LeftY = -leftStickY;
+            double LeftX = -leftStickX;
+            double RightX = -rightStickX;
+            frontLeftVal = ((LeftY - RightX) - LeftX);
+            frontRightVal = ((LeftY + RightX) + LeftX);
+            backLeftVal = ((LeftY - RightX) + LeftX);
+            backRightVal = ((LeftY + RightX) - LeftX);
+
+            realTelemetry.addData("LeftX", LeftX);
+            realTelemetry.addData("RightX", RightX);
+            realTelemetry.addData("LeftY", LeftY);
+        }
 
         frontLeftDrive.setPower(frontLeftVal * slowModeMult * TeleOpDTConstants.power_modifier);
         frontRightDrive.setPower(frontRightVal * slowModeMult * TeleOpDTConstants.power_modifier);
         backLeftDrive.setPower(backLeftVal * slowModeMult * TeleOpDTConstants.power_modifier);
         backRightDrive.setPower(backRightVal * slowModeMult * TeleOpDTConstants.power_modifier);
 
-        realTelemetry.addData("left stick angle", LeftStickAngle);
-//        realTelemetry.addData("right stick angle", RightStickAngle);
-        realTelemetry.addData("imu angle 1", imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.RADIANS).firstAngle);
-        realTelemetry.addData("imu angle 2", imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.RADIANS).firstAngle);
-        realTelemetry.addData("imu angle 3", imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.RADIANS).firstAngle);
-        realTelemetry.addData("FLV", frontLeftVal);
-        realTelemetry.addData("LeftX", LeftX);
-        realTelemetry.addData("RightX", RightX);
-        realTelemetry.addData("LeftY", LeftY);
-        realTelemetry.addData("Robot Angle", RobotAngle);
+
 
 
     }
@@ -147,4 +177,5 @@ public class Drivetrain {
 //        return t + r;
 //
 //    }
+
 }

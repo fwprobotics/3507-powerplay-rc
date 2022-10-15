@@ -64,18 +64,19 @@ public class RightRed extends LinearOpMode {
                 .build();
         TrajectorySequence toStack = drive.trajectorySequenceBuilder(startSequence.end())
                 .setReversed(true)
-                .lineToConstantHeading(new Vector2d(24, -14), SampleMecanumDrive.getVelocityConstraint(50, DriveConstants.MAX_ANG_VEL, DriveConstants.TRACK_WIDTH), SampleMecanumDrive.getAccelerationConstraint(30))
-
+                //.lineToConstantHeading(new Vector2d(24, -14), SampleMecanumDrive.getVelocityConstraint(50, DriveConstants.MAX_ANG_VEL, DriveConstants.TRACK_WIDTH), SampleMecanumDrive.getAccelerationConstraint(30))
+                .strafeRight(12)
                 //.lineToConstantHeading(new Vector2d(60, -12))
-                .back(35)
+                .back(43)
 
                         .build();
 //        TrajectorySequence toStackPartTwo = drive.trajectorySequenceBuilder(toStack.end())
 //                .lineToConstantHeading(new Vector2d(60, -12))
 //                .build();
         TrajectorySequence toPole = drive.trajectorySequenceBuilder(toStack.end())
-                .forward(35)
-                .lineToConstantHeading(new Vector2d(12, -24))
+                .forward(43)
+                .strafeLeft(12)
+                //.lineToConstantHeading(new Vector2d(12, -24))
                         .build();
         TrajectorySequence toLeftZone = drive.trajectorySequenceBuilder(toPole.end())
                 .splineToConstantHeading(new Vector2d(12, -12), Math.toRadians(0))
