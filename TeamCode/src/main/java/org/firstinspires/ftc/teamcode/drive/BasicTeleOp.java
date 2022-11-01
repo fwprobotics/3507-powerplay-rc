@@ -32,6 +32,11 @@ public class BasicTeleOp extends LinearOpMode {
             leftRear.setPower(gamepad1.left_stick_y);
             rightFront.setPower(gamepad1.right_stick_y);
             rightRear.setPower(gamepad1.right_stick_y);
+            telemetry.addData("Front left", leftFront.getCurrentPosition());
+            telemetry.addData("Front right", rightFront.getCurrentPosition());
+            telemetry.addData("Back left", leftRear.getCurrentPosition());
+            telemetry.addData("Back right", rightRear.getCurrentPosition());
+            telemetry.update();
         }
     }
 }

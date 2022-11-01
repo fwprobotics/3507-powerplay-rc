@@ -20,7 +20,7 @@ public class Teleop extends LinearOpMode {
     public void runOpMode() {
 
         drivetrain = new Drivetrain(this, hardwareMap, telemetry);
-        lift = new Lift(Lift.liftRunMode.AUTONOMOUS, this, hardwareMap, telemetry);
+        lift = new Lift(Lift.liftRunMode.TELEOP, this, hardwareMap, telemetry);
         telemetry.addLine("Ready and WAITING :)");
         telemetry.update();
 

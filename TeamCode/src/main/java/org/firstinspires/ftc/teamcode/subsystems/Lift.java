@@ -27,7 +27,7 @@ public class Lift {
         FLOOR (0),
         LOW (0),
         MEDIUM (0),
-        HIGH (0);
+        HIGH (-450);
 
         public int position;
         dropoffOptions(int position) {this.position = position;}
@@ -39,7 +39,8 @@ public class Lift {
 
     @Config
     public static class LiftConstants {
-        public static double power_modifier = 0.5;
+        public static double power_modifier = 0.1;
+        public static double auto_power_modifier = 0.2;
     }
 
     public Lift(liftRunMode runmode, LinearOpMode Input, HardwareMap hardwareMap, Telemetry telemetry) {
@@ -74,7 +75,7 @@ public class Lift {
                 rightLiftMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
                 rightLiftMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
-                leftLiftMotor.setDirection(DcMotorSimple.Direction.REVERSE); // Reverse left side
+                rightLiftMotor.setDirection(DcMotorSimple.Direction.REVERSE); // Reverse left side
         }
     }
 
@@ -93,8 +94,8 @@ public class Lift {
         rightLiftMotor.setTargetPosition(Pos.position());
         leftLiftMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         rightLiftMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        leftLiftMotor.setPower(0.5);
-        rightLiftMotor.setPower(0.5);
+        leftLiftMotor.setPower(LiftConstants.auto_power_modifier);
+        rightLiftMotor.setPower(LiftConstants.auto_power_modifier);
     }
 
     public void teleOpControl(double input, boolean high, boolean low, boolean floor, boolean medium) { // Rename inputs based on real buttons we choose
@@ -111,13 +112,13 @@ public class Lift {
         if (low) {
             setPosition(dropoffOptions.LOW);
         }
-        if (!floor & !high & !medium & !low  & !leftLiftMotor.isBusy() & !rightLiftMotor.isBusy()) {
+        if (!floor & !high & !medium & !low  & !leftLiftMotor.isBusy() & !rightLiftMotor.isBusy() & leftLiftMotor.getCurrentPosition() <= 0 & rightLiftMotor.getCurrentPosition() <= 0 & leftLiftMotor.getCurrentPosition() >= 450 & rightLiftMotor.getCurrentPosition() >= 450) {
 
-            leftLiftMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-            rightLiftMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+             leftLiftMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+             rightLiftMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
             leftLiftMotor.setPower(input * LiftConstants.power_modifier);
             rightLiftMotor.setPower(input * LiftConstants.power_modifier); //Probably should/can get toned down
-        }
+             }
         l.telemetry.addData("left encoder", leftLiftMotor.getCurrentPosition());
         l.telemetry.addData("right encoder", rightLiftMotor.getCurrentPosition());
     }

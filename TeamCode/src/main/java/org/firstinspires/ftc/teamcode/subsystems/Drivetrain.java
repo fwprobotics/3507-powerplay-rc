@@ -166,7 +166,10 @@ public class Drivetrain {
         backLeftDrive.setPower(backLeftVal * slowModeMult * TeleOpDTConstants.power_modifier);
         backRightDrive.setPower(backRightVal * slowModeMult * TeleOpDTConstants.power_modifier);
 
-
+        realTelemetry.addData("Front Left", frontLeftDrive.getCurrentPosition());
+        realTelemetry.addData("Back Left", backLeftDrive.getCurrentPosition());
+        realTelemetry.addData("Front Right", frontRightDrive.getCurrentPosition());
+        realTelemetry.addData("Back Right", backRightDrive.getCurrentPosition());
 
 
     }
