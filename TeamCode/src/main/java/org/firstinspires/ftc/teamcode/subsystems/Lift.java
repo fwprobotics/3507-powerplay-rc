@@ -112,7 +112,7 @@ public class Lift {
         if (low) {
             setPosition(dropoffOptions.LOW);
         }
-        if (!floor & !high & !medium & !low  & !leftLiftMotor.isBusy() & !rightLiftMotor.isBusy() & leftLiftMotor.getCurrentPosition() <= 0 & rightLiftMotor.getCurrentPosition() <= 0 & leftLiftMotor.getCurrentPosition() >= 450 & rightLiftMotor.getCurrentPosition() >= 450) {
+        if (!floor & !high & !medium & !low  & !leftLiftMotor.isBusy() & !rightLiftMotor.isBusy() & leftLiftMotor.getCurrentPosition() <= 0 & rightLiftMotor.getCurrentPosition() <= 0 & leftLiftMotor.getCurrentPosition() >= -450 & rightLiftMotor.getCurrentPosition() >= -450) {
 
              leftLiftMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
              rightLiftMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
