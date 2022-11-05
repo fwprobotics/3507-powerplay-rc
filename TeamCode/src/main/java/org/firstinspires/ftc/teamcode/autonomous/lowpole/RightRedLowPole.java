@@ -10,6 +10,7 @@ import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.teamcode.ApriltagDetectionPipeline;
 import org.firstinspires.ftc.teamcode.drive.DriveConstants;
 import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
+import org.firstinspires.ftc.teamcode.subsystems.Lift;
 import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequence;
 import org.openftc.easyopencv.OpenCvCamera;
 import org.openftc.easyopencv.OpenCvCameraFactory;
@@ -36,6 +37,7 @@ public class RightRedLowPole extends LinearOpMode {
     public void runOpMode() {
 
         SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
+        Lift lift = new Lift(Lift.liftRunMode.AUTONOMOUS, this, hardwareMap, telemetry);
         Pose2d startPose = new Pose2d(30, -66, Math.toRadians(90));
         drive.setPoseEstimate(startPose);
         ElapsedTime matchTimer = new ElapsedTime();
@@ -53,28 +55,30 @@ public class RightRedLowPole extends LinearOpMode {
                 .splineToConstantHeading(new Vector2d(12, -55), Math.toRadians(0))
                 //.strafeTo(new Vector2d(12, -55))
                 // .lineToSplineHeading(new Pose2d(12, -24, Math.toRadians(180)))
-                .lineToLinearHeading(new Pose2d(12, -24, Math.toRadians(180)))
+                .lineToLinearHeading(new Pose2d(12, -24, Math.toRadians(0)))
                 .build();
         TrajectorySequence toStack = drive.trajectorySequenceBuilder(startSequence.end())
                 .setReversed(true)
-                .lineToConstantHeading(new Vector2d(24, -14), SampleMecanumDrive.getVelocityConstraint(50, DriveConstants.MAX_ANG_VEL, DriveConstants.TRACK_WIDTH), SampleMecanumDrive.getAccelerationConstraint(30))
-                .back(30)
-                .splineToSplineHeading(new Pose2d(60, -18, Math.toRadians(200)), Math.toRadians(0))
+                .lineToConstantHeading(new Vector2d(18, -14), SampleMecanumDrive.getVelocityConstraint(50, DriveConstants.MAX_ANG_VEL, DriveConstants.TRACK_WIDTH), SampleMecanumDrive.getAccelerationConstraint(30))
+                .forward(36)
+                .lineToLinearHeading(new Pose2d(60, -18, Math.toRadians(30)))
 
                 //.lineToConstantHeading(new Vector2d(60, -12))
 
 
                 .build();
-        TrajectorySequence toLeftZone = drive.trajectorySequenceBuilder(startSequence.end())
-                .lineToConstantHeading(new Vector2d(48, -12))
+        TrajectorySequence toLeftZone = drive.trajectorySequenceBuilder(toStack.end())
+                .lineToLinearHeading(new Pose2d(60, -12, Math.toRadians(0)))
                 .lineToConstantHeading(new Vector2d(12, -12))
                         .build();
-        TrajectorySequence toMiddleZone = drive.trajectorySequenceBuilder(startSequence.end())
+        TrajectorySequence toMiddleZone = drive.trajectorySequenceBuilder(toStack.end())
                 .lineToConstantHeading(new Vector2d(36, -12))
                 .build();
 
         //TODO:Move lift up and extends arm to align with pole
+        lift.setPosition(Lift.dropoffOptions.HIGH);
         drive.followTrajectorySequence(startSequence);
+        lift.setPosition(Lift.dropoffOptions.FLOOR);
         sleep(1000); //simulated cone dropping offing
         //TODO: Open claw to drop cone
         drive.followTrajectorySequence(toStack);
@@ -139,6 +143,7 @@ public class RightRedLowPole extends LinearOpMode {
         else if (signalzone == 2) signalZone = SignalZone.MIDDLE;
         else if (signalzone == 3) signalZone = SignalZone.RIGHT;
         else signalZone = signalZone.MIDDLE;
+        webcam.closeCameraDevice();
 
     }
 }

@@ -40,8 +40,8 @@ public class Teleop extends LinearOpMode {
         pickup = new ToggleButton(false);
         flip = new ToggleButton(false);
         clawToggle = new ToggleButton(false);
-        claw = new Claw(hardwareMap);
-        arm = new Arm(this, hardwareMap, telemetry);
+    //    claw = new Claw(hardwareMap);
+     //   arm = new Arm(this, hardwareMap, telemetry);
         telemetry.addLine("Ready and WAITING :)");
         telemetry.update();
 
@@ -60,13 +60,13 @@ public class Teleop extends LinearOpMode {
                 low.toggle(gamepad2.dpad_left);
                 pickup.toggle(gamepad2.dpad_down);
                 flip.toggle(gamepad2.x);
-                clawToggle.toggle(gamepad2.right_bumper);
-                if (clawToggle.newPress()){
-                    claw.TeleopControl(clawToggle.state());
-                }
+                //clawToggle.toggle(gamepad2.right_bumper);
+                //if (clawToggle.newPress()){
+                 //   claw.TeleopControl(clawToggle.state());
+                //}
                 lift.teleOpControl(gamepad2.right_stick_y, high.newPress(), low.newPress(), pickup.newPress(), mid.newPress());
                 if (high.newPress() || mid.newPress() || low.newPress() || pickup.newPress() || flip.newPress()) {
-                    arm.TeleopControl(pickup.newPress(), low.newPress(), mid.newPress(), high.newPress(), flip.state(), flip.newPress());
+                   // arm.TeleopControl(pickup.newPress(), low.newPress(), mid.newPress(), high.newPress(), flip.state(), flip.newPress());
                 }
                 telemetry.update();
 

@@ -26,8 +26,8 @@ public class Lift {
     public enum dropoffOptions {
         FLOOR (0),
         LOW (0),
-        MEDIUM (0),
-        HIGH (-450);
+        MEDIUM (-200),
+        HIGH (-400);
 
         public int position;
         dropoffOptions(int position) {this.position = position;}
@@ -40,7 +40,7 @@ public class Lift {
     @Config
     public static class LiftConstants {
         public static double power_modifier = 0.1;
-        public static double auto_power_modifier = 0.2;
+        public static double auto_power_modifier = 0.1;
     }
 
     public Lift(liftRunMode runmode, LinearOpMode Input, HardwareMap hardwareMap, Telemetry telemetry) {
@@ -55,13 +55,11 @@ public class Lift {
         switch (runmode) {
             case AUTONOMOUS:
                 leftLiftMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-                leftLiftMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
                 leftLiftMotor.setTargetPosition(0);
                 leftLiftMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-                leftLiftMotor.setDirection(DcMotorSimple.Direction.REVERSE);
+               // leftLiftMotor.setDirection(DcMotorSimple.Direction.REVERSE);
 
                 rightLiftMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-                rightLiftMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
                 rightLiftMotor.setTargetPosition(0);
                 rightLiftMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                 break;
@@ -75,7 +73,7 @@ public class Lift {
                 rightLiftMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
                 rightLiftMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
-                rightLiftMotor.setDirection(DcMotorSimple.Direction.REVERSE); // Reverse left side
+              //1  rightLiftMotor.setDirection(DcMotorSimple.Direction.REVERSE); // Reverse left side
         }
     }
 
@@ -96,6 +94,13 @@ public class Lift {
         rightLiftMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         leftLiftMotor.setPower(LiftConstants.auto_power_modifier);
         rightLiftMotor.setPower(LiftConstants.auto_power_modifier);
+        if (Pos.position() == 0) {
+            leftLiftMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
+            rightLiftMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
+        } else {
+            leftLiftMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+            rightLiftMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        }
     }
 
     public void teleOpControl(double input, boolean high, boolean low, boolean floor, boolean medium) { // Rename inputs based on real buttons we choose
@@ -112,7 +117,7 @@ public class Lift {
         if (low) {
             setPosition(dropoffOptions.LOW);
         }
-        if (!floor & !high & !medium & !low  & !leftLiftMotor.isBusy() & !rightLiftMotor.isBusy() & leftLiftMotor.getCurrentPosition() <= 0 & rightLiftMotor.getCurrentPosition() <= 0 & leftLiftMotor.getCurrentPosition() >= -450 & rightLiftMotor.getCurrentPosition() >= -450) {
+        if (!floor & !high & !medium & !low  & !leftLiftMotor.isBusy() & !rightLiftMotor.isBusy()) {
 
              leftLiftMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
              rightLiftMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
