@@ -26,7 +26,7 @@ public class Arm {
     @Config
     public static class ArmConstants {
 
-        public static double arm_pickup = 0;
+        public static double arm_pickup = 0.15;
         public static double arm_low_front = 0.05;
         public static double arm_mid_front = 0.23;
         public static double arm_high_front = 0.45;

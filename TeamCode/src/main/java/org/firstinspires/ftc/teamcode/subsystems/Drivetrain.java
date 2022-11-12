@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode.subsystems;
 
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
+import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.qualcomm.hardware.motors.RevRobotics20HdHexMotor;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.hardware.bosch.BNO055IMU;
@@ -19,12 +20,14 @@ import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
-
+import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
+import com.acmerobotics.roadrunner.geometry.Pose2d;
 // Want to toggle between this and normal driving
 
 public class Drivetrain {
 
     private DcMotor frontLeftDrive, frontRightDrive, backLeftDrive, backRightDrive;
+    private SampleMecanumDrive drive;
 
     public LinearOpMode l;
     public Telemetry realTelemetry;
@@ -49,12 +52,13 @@ public class Drivetrain {
     }
 
 
-    public Drivetrain(LinearOpMode Input, HardwareMap hardwareMap, Telemetry telemetry){
+    public Drivetrain(LinearOpMode Input, HardwareMap hardwareMap, Telemetry telemetry, SampleMecanumDrive drive){
 
         l = Input;
+        this.drive = drive;
         realTelemetry = telemetry;
         realTelemetry.setAutoClear(true);
-        fieldRelativeDrive = new ToggleButton(true);
+        fieldRelativeDrive = new ToggleButton(false);
 
         backLeftDrive = hardwareMap.dcMotor.get("backLeftDrive");
         backRightDrive = hardwareMap.dcMotor.get("backRightDrive");
@@ -83,7 +87,7 @@ public class Drivetrain {
         backRightDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
         frontRightDrive.setDirection(DcMotorSimple.Direction.REVERSE);
-        backRightDrive.setDirection(DcMotorSimple.Direction.REVERSE);
+        backLeftDrive.setDirection(DcMotorSimple.Direction.REVERSE);
 
 
 
@@ -103,6 +107,7 @@ public class Drivetrain {
         double backRightVal;
 
         double slowModeMult = slowModeControl ? 0.3 : 1;
+
 
         if (fieldRelativeDrive.state()) {
 
@@ -155,10 +160,18 @@ public class Drivetrain {
             frontRightVal = ((LeftY + RightX) + LeftX);
             backLeftVal = ((LeftY - RightX) + LeftX);
             backRightVal = ((LeftY + RightX) - LeftX);
+//            drive.setWeightedDrivePower(
+//                    new Pose2d(
+//                            -leftStickY,
+//                            -leftStickX,
+//                            -rightStickX
+//                    )
+//            );
+//            drive.update();
 
-            realTelemetry.addData("LeftX", LeftX);
-            realTelemetry.addData("RightX", RightX);
-            realTelemetry.addData("LeftY", LeftY);
+         //   realTelemetry.addData("LeftX", LeftX);
+          //  realTelemetry.addData("RightX", RightX);
+           // realTelemetry.addData("LeftY", LeftY);
         }
 
         frontLeftDrive.setPower(frontLeftVal * slowModeMult * TeleOpDTConstants.power_modifier);
@@ -170,6 +183,7 @@ public class Drivetrain {
         realTelemetry.addData("Back Left", backLeftDrive.getCurrentPosition());
         realTelemetry.addData("Front Right", frontRightDrive.getCurrentPosition());
         realTelemetry.addData("Back Right", backRightDrive.getCurrentPosition());
+        realTelemetry.addData("Toggle Field Relative", fieldRelativeDrive.state());
 
 
     }

@@ -10,6 +10,8 @@ import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.teamcode.ApriltagDetectionPipeline;
 import org.firstinspires.ftc.teamcode.drive.DriveConstants;
 import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
+import org.firstinspires.ftc.teamcode.subsystems.Arm;
+import org.firstinspires.ftc.teamcode.subsystems.Claw;
 import org.firstinspires.ftc.teamcode.subsystems.Lift;
 import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequence;
 import org.openftc.easyopencv.OpenCvCamera;
@@ -37,8 +39,10 @@ public class RightRedLowPole extends LinearOpMode {
     public void runOpMode() {
 
         SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
-        Lift lift = new Lift(Lift.liftRunMode.AUTONOMOUS, this, hardwareMap, telemetry);
-        Pose2d startPose = new Pose2d(30, -66, Math.toRadians(90));
+     //   Lift lift = new Lift(Lift.liftRunMode.AUTONOMOUS, this, hardwareMap, telemetry);
+        Arm arm = new Arm(this, hardwareMap, telemetry);
+        Claw claw = new Claw(hardwareMap);
+        Pose2d startPose = new Pose2d(32, -66, Math.toRadians(90));
         drive.setPoseEstimate(startPose);
         ElapsedTime matchTimer = new ElapsedTime();
         initCV();
@@ -52,15 +56,20 @@ public class RightRedLowPole extends LinearOpMode {
 
         TrajectorySequence startSequence = drive.trajectorySequenceBuilder(startPose)
                 //.splineToConstantHeading(new Vector2d(30, -60), Math.toRadians(0))
-                .splineToConstantHeading(new Vector2d(12, -55), Math.toRadians(0))
+                .addTemporalMarker(2, () -> {
+                    arm.ArmAutoControl(Arm.armStatuses.HIGH_BACK);
+                })
+                .splineToConstantHeading(new Vector2d(42, -36), Math.toRadians(0))
+                .splineToConstantHeading(new Vector2d(60, -36), Math.toRadians(0))
                 //.strafeTo(new Vector2d(12, -55))
                 // .lineToSplineHeading(new Pose2d(12, -24, Math.toRadians(180)))
-                .lineToLinearHeading(new Pose2d(12, -24, Math.toRadians(0)))
+                .lineToLinearHeading(new Pose2d(60, -18, Math.toRadians(35)))
+
                 .build();
         TrajectorySequence toStack = drive.trajectorySequenceBuilder(startSequence.end())
                 .setReversed(true)
-                .lineToConstantHeading(new Vector2d(18, -14), SampleMecanumDrive.getVelocityConstraint(50, DriveConstants.MAX_ANG_VEL, DriveConstants.TRACK_WIDTH), SampleMecanumDrive.getAccelerationConstraint(30))
-                .forward(36)
+                .lineToConstantHeading(new Vector2d(9, -12), SampleMecanumDrive.getVelocityConstraint(50, DriveConstants.MAX_ANG_VEL, DriveConstants.TRACK_WIDTH), SampleMecanumDrive.getAccelerationConstraint(30))
+                .forward(45)
                 .lineToLinearHeading(new Pose2d(60, -18, Math.toRadians(30)))
 
                 //.lineToConstantHeading(new Vector2d(60, -12))
@@ -76,15 +85,19 @@ public class RightRedLowPole extends LinearOpMode {
                 .build();
 
         //TODO:Move lift up and extends arm to align with pole
-        lift.setPosition(Lift.dropoffOptions.HIGH);
+        claw.AutoControl(Claw.clawStatuses.CLOSED);
+       // lift.setPosition(Lift.dropoffOptions.HIGH);
         drive.followTrajectorySequence(startSequence);
-        lift.setPosition(Lift.dropoffOptions.FLOOR);
+        claw.AutoControl(Claw.clawStatuses.DROP);
+        arm.ArmAutoControl(Arm.armStatuses.PICKUP);
+       // lift.setPosition(Lift.dropoffOptions.FLOOR);
+
         sleep(1000); //simulated cone dropping offing
         //TODO: Open claw to drop cone
-        drive.followTrajectorySequence(toStack);
+       // drive.followTrajectorySequence(toStack);
 
         //this repeats until there is not enough time left to complete next cycle
-        while (matchTimer.seconds() < 25) {
+        while (matchTimer.seconds() < 25 && opModeIsActive()) {
             //TODO: Move arm from stacj to pole and back
 
 

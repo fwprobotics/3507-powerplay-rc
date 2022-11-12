@@ -26,8 +26,8 @@ public class Lift {
     public enum dropoffOptions {
         FLOOR (0),
         LOW (0),
-        MEDIUM (-200),
-        HIGH (-400);
+        MEDIUM (-1800),
+        HIGH (-2600);
 
         public int position;
         dropoffOptions(int position) {this.position = position;}
@@ -39,8 +39,8 @@ public class Lift {
 
     @Config
     public static class LiftConstants {
-        public static double power_modifier = 0.1;
-        public static double auto_power_modifier = 0.1;
+        public static double power_modifier = 0.2;
+        public static double auto_power_modifier = 0.2;
     }
 
     public Lift(liftRunMode runmode, LinearOpMode Input, HardwareMap hardwareMap, Telemetry telemetry) {
@@ -117,7 +117,7 @@ public class Lift {
         if (low) {
             setPosition(dropoffOptions.LOW);
         }
-        if (!floor & !high & !medium & !low  & !leftLiftMotor.isBusy() & !rightLiftMotor.isBusy()) {
+        if (!floor & !high & !medium & !low & !leftLiftMotor.isBusy() & !rightLiftMotor.isBusy()) {
 
              leftLiftMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
              rightLiftMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);

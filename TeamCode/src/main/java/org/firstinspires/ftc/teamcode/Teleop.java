@@ -4,6 +4,7 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.Servo;
 
+import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
 import org.firstinspires.ftc.teamcode.subsystems.Drivetrain;
 import org.firstinspires.ftc.teamcode.subsystems.Lift;
 import org.firstinspires.ftc.teamcode.subsystems.ToggleButton;
@@ -14,7 +15,7 @@ import org.firstinspires.ftc.teamcode.subsystems.Claw;
 @TeleOp
 public class Teleop extends LinearOpMode {
 
-
+    SampleMecanumDrive drive;
     Drivetrain drivetrain;
     Lift lift;
     ToggleButton high;
@@ -31,8 +32,8 @@ public class Teleop extends LinearOpMode {
 
     @Override
     public void runOpMode() {
-
-        drivetrain = new Drivetrain(this, hardwareMap, telemetry);
+        drive = new SampleMecanumDrive(hardwareMap);
+        drivetrain = new Drivetrain(this, hardwareMap, telemetry, drive);
         lift = new Lift(Lift.liftRunMode.TELEOP, this, hardwareMap, telemetry);
         high = new ToggleButton(false);
         mid = new ToggleButton(false);
@@ -40,8 +41,8 @@ public class Teleop extends LinearOpMode {
         pickup = new ToggleButton(false);
         flip = new ToggleButton(false);
         clawToggle = new ToggleButton(false);
-    //    claw = new Claw(hardwareMap);
-     //   arm = new Arm(this, hardwareMap, telemetry);
+        claw = new Claw(hardwareMap);
+        arm = new Arm(this, hardwareMap, telemetry);
         telemetry.addLine("Ready and WAITING :)");
         telemetry.update();
 
@@ -60,13 +61,11 @@ public class Teleop extends LinearOpMode {
                 low.toggle(gamepad2.dpad_left);
                 pickup.toggle(gamepad2.dpad_down);
                 flip.toggle(gamepad2.x);
-                //clawToggle.toggle(gamepad2.right_bumper);
-                //if (clawToggle.newPress()){
-                 //   claw.TeleopControl(clawToggle.state());
-                //}
+              //  clawToggle.toggle(gamepad2.right_bumper);
+                claw.TeleopControl(gamepad2.a, gamepad2.y, gamepad2.b);
                 lift.teleOpControl(gamepad2.right_stick_y, high.newPress(), low.newPress(), pickup.newPress(), mid.newPress());
                 if (high.newPress() || mid.newPress() || low.newPress() || pickup.newPress() || flip.newPress()) {
-                   // arm.TeleopControl(pickup.newPress(), low.newPress(), mid.newPress(), high.newPress(), flip.state(), flip.newPress());
+                    arm.TeleopControl(pickup.newPress(), low.newPress(), mid.newPress(), high.newPress(), flip.state(), flip.newPress());
                 }
                 telemetry.update();
 
