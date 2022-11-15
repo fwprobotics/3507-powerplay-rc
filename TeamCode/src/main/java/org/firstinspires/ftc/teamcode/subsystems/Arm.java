@@ -26,13 +26,13 @@ public class Arm {
     @Config
     public static class ArmConstants {
 
-        public static double arm_pickup = 0.15;
+        public static double arm_pickup = 0;
         public static double arm_low_front = 0.05;
         public static double arm_mid_front = 0.23;
         public static double arm_high_front = 0.45;
         public static double arm_high_back = 0.65;
-        public static double arm_mid_back = 0.85;
-        public static double arm_low_back = 0.95;
+        public static double arm_mid_back = 0.75;
+        public static double arm_low_back = 0.75;
 
     }
 
@@ -41,9 +41,9 @@ public class Arm {
         LOW_FRONT (ArmConstants.arm_low_front),
         MID_FRONT (ArmConstants.arm_mid_front),
         HIGH_FRONT (ArmConstants.arm_high_front),
-        LOW_BACK (ArmConstants.arm_high_back),
+        LOW_BACK (ArmConstants.arm_low_back),
         MID_BACK (ArmConstants.arm_mid_back),
-        HIGH_BACK (ArmConstants.arm_low_back);
+        HIGH_BACK (ArmConstants.arm_high_back);
 
 
         public double position;
@@ -62,7 +62,7 @@ public class Arm {
 
         arm = hardwareMap.servo.get("armservo"); // Really not important which is which
 
-        arm.setPosition(armStatus.position());
+     //   arm.setPosition(armStatus.position());
 
 
     }

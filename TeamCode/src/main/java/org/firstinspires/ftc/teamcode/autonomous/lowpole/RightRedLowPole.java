@@ -42,10 +42,11 @@ public class RightRedLowPole extends LinearOpMode {
      //   Lift lift = new Lift(Lift.liftRunMode.AUTONOMOUS, this, hardwareMap, telemetry);
         Arm arm = new Arm(this, hardwareMap, telemetry);
         Claw claw = new Claw(hardwareMap);
-        Pose2d startPose = new Pose2d(32, -66, Math.toRadians(90));
+        Pose2d startPose = new Pose2d(30, -66, Math.toRadians(90));
         drive.setPoseEstimate(startPose);
         ElapsedTime matchTimer = new ElapsedTime();
         initCV();
+        claw.AutoControl(Claw.clawStatuses.CLOSED);
         waitForStart();
         matchTimer.reset();
         readSignal();
@@ -56,14 +57,15 @@ public class RightRedLowPole extends LinearOpMode {
 
         TrajectorySequence startSequence = drive.trajectorySequenceBuilder(startPose)
                 //.splineToConstantHeading(new Vector2d(30, -60), Math.toRadians(0))
-                .addTemporalMarker(2, () -> {
-                    arm.ArmAutoControl(Arm.armStatuses.HIGH_BACK);
-                })
-                .splineToConstantHeading(new Vector2d(42, -36), Math.toRadians(0))
-                .splineToConstantHeading(new Vector2d(60, -36), Math.toRadians(0))
+                .addTemporalMarker(0.5, () -> {
+                    arm.ArmAutoControl(Arm.armStatuses.LOW_BACK);
+        })
+
+                .splineToConstantHeading(new Vector2d(52, -63), Math.toRadians(0), SampleMecanumDrive.getVelocityConstraint(30, DriveConstants.MAX_ANG_VEL, DriveConstants.TRACK_WIDTH), SampleMecanumDrive.getAccelerationConstraint(DriveConstants.MAX_ACCEL))
+                .splineToConstantHeading(new Vector2d(52, -36), Math.toRadians(0))
                 //.strafeTo(new Vector2d(12, -55))
                 // .lineToSplineHeading(new Pose2d(12, -24, Math.toRadians(180)))
-                .lineToLinearHeading(new Pose2d(60, -18, Math.toRadians(35)))
+                .lineToLinearHeading(new Pose2d(48, -14, Math.toRadians(30)))
 
                 .build();
         TrajectorySequence toStack = drive.trajectorySequenceBuilder(startSequence.end())
@@ -78,18 +80,20 @@ public class RightRedLowPole extends LinearOpMode {
                 .build();
         TrajectorySequence toLeftZone = drive.trajectorySequenceBuilder(toStack.end())
                 .lineToLinearHeading(new Pose2d(60, -12, Math.toRadians(0)))
-                .lineToConstantHeading(new Vector2d(12, -12))
+                .lineToConstantHeading(new Vector2d(8, -12))
                         .build();
         TrajectorySequence toMiddleZone = drive.trajectorySequenceBuilder(toStack.end())
+                .lineToLinearHeading(new Pose2d(60, -12, Math.toRadians(0)))
                 .lineToConstantHeading(new Vector2d(36, -12))
                 .build();
 
         //TODO:Move lift up and extends arm to align with pole
-        claw.AutoControl(Claw.clawStatuses.CLOSED);
+
+
        // lift.setPosition(Lift.dropoffOptions.HIGH);
         drive.followTrajectorySequence(startSequence);
         claw.AutoControl(Claw.clawStatuses.DROP);
-        arm.ArmAutoControl(Arm.armStatuses.PICKUP);
+       // arm.ArmAutoControl(Arm.armStatuses.PICKUP);
        // lift.setPosition(Lift.dropoffOptions.FLOOR);
 
         sleep(1000); //simulated cone dropping offing
