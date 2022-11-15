@@ -21,8 +21,6 @@ public class Arm {
     public LinearOpMode l;
     public Telemetry realTelemetry;
 
-    private boolean nubInputButtonPressed;
-
     @Config
     public static class ArmConstants {
 
