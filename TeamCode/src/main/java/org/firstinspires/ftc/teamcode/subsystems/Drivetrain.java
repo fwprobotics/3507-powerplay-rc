@@ -47,7 +47,7 @@ public class Drivetrain {
 //        public static double y_modifier = 0.95;
 //        public static double x_modifier = 0.85;
         public static double speedFactor = 0.8;
-        public static double power_modifier = Math.sqrt(2);
+        public static double power_modifier = 0.8;
 
     }
 
@@ -156,10 +156,10 @@ public class Drivetrain {
             double LeftY = -leftStickY;
             double LeftX = -leftStickX;
             double RightX = -rightStickX;
-            frontLeftVal = ((LeftY - RightX) - LeftX);
-            frontRightVal = ((LeftY + RightX) + LeftX);
-            backLeftVal = ((LeftY - RightX) + LeftX);
-            backRightVal = ((LeftY + RightX) - LeftX);
+            frontLeftVal = cubeInput(((LeftY - RightX) - LeftX), TeleOpDTConstants.speedFactor);
+            frontRightVal = cubeInput(((LeftY + RightX) + LeftX), TeleOpDTConstants.speedFactor);
+            backLeftVal = cubeInput(((LeftY - RightX) + LeftX), TeleOpDTConstants.speedFactor);
+            backRightVal = cubeInput(((LeftY + RightX) - LeftX), TeleOpDTConstants.speedFactor);
 //            drive.setWeightedDrivePower(
 //                    new Pose2d(
 //                            -leftStickY,
@@ -188,11 +188,11 @@ public class Drivetrain {
 
     }
 
-//    double cubeInput (double input, double factor) {
-//        double t = factor * Math.pow(input,3 );
-//        double r = input * (1 - factor);
-//        return t + r;
-//
-//    }
+    double cubeInput (double input, double factor) {
+        double t = factor * Math.pow(input,3 );
+        double r = input * (1 - factor);
+        return t + r;
+
+    }
 
 }
