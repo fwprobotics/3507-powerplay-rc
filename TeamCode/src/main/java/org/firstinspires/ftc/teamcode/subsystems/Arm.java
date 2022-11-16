@@ -5,6 +5,7 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.DigitalChannel;
+import com.qualcomm.robotcore.hardware.CRServo;
 
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
@@ -17,6 +18,7 @@ control for nub and movement of 4-bar. By Jake, 1/27/20.
 public class Arm {
 
     public Servo arm;
+    public CRServo armCont;
 
     public LinearOpMode l;
     public Telemetry realTelemetry;
@@ -33,6 +35,7 @@ public class Arm {
         public static double arm_low_back = 0.65;
         public static double stackTop = 0.25;
         public static double stackDifference = 0.01;
+        public static double armPowerModifier = 0.8;
 
     }
 
@@ -60,8 +63,8 @@ public class Arm {
         l = Input;
         realTelemetry = telemetry;
 
-        arm = hardwareMap.servo.get("armservo"); // Really not important which is which
-
+    //    arm = hardwareMap.servo.get("armservo"); // Really not important which is which
+        armCont = hardwareMap.crservo.get("armservo");
      //   arm.setPosition(armStatus.position());
 
 
@@ -123,6 +126,10 @@ public class Arm {
             }
         }
         arm.setPosition(armStatus.position());
+    }
+
+    public void ManualControl(double input){
+        armCont.setPower(input*ArmConstants.armPowerModifier);
     }
 
 }
