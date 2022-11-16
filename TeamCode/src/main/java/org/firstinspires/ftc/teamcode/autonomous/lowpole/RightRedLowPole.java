@@ -61,11 +61,12 @@ public class RightRedLowPole extends LinearOpMode {
                     arm.ArmAutoControl(Arm.armStatuses.LOW_BACK);
         })
 
-                .splineToConstantHeading(new Vector2d(52, -63), Math.toRadians(0), SampleMecanumDrive.getVelocityConstraint(30, DriveConstants.MAX_ANG_VEL, DriveConstants.TRACK_WIDTH), SampleMecanumDrive.getAccelerationConstraint(DriveConstants.MAX_ACCEL))
-                .splineToConstantHeading(new Vector2d(52, -36), Math.toRadians(0))
+                .splineToConstantHeading(new Vector2d(54, -63), Math.toRadians(0), SampleMecanumDrive.getVelocityConstraint(30, DriveConstants.MAX_ANG_VEL, DriveConstants.TRACK_WIDTH), SampleMecanumDrive.getAccelerationConstraint(DriveConstants.MAX_ACCEL))
+                .splineToConstantHeading(new Vector2d(54, -36), Math.toRadians(0))
+                .splineToConstantHeading(new Vector2d(54, -20), Math.toRadians(0))
                 //.strafeTo(new Vector2d(12, -55))
                 // .lineToSplineHeading(new Pose2d(12, -24, Math.toRadians(180)))
-                .lineToLinearHeading(new Pose2d(48, -14, Math.toRadians(30)))
+                .lineToLinearHeading(new Pose2d(52, -18, Math.toRadians(35)))
 
                 .build();
         TrajectorySequence toStack = drive.trajectorySequenceBuilder(startSequence.end())
@@ -84,7 +85,7 @@ public class RightRedLowPole extends LinearOpMode {
                         .build();
         TrajectorySequence toMiddleZone = drive.trajectorySequenceBuilder(toStack.end())
                 .lineToLinearHeading(new Pose2d(60, -12, Math.toRadians(0)))
-                .lineToConstantHeading(new Vector2d(36, -12))
+                .lineToConstantHeading(new Vector2d(32, -12))
                 .build();
 
         //TODO:Move lift up and extends arm to align with pole
@@ -101,11 +102,19 @@ public class RightRedLowPole extends LinearOpMode {
        // drive.followTrajectorySequence(toStack);
 
         //this repeats until there is not enough time left to complete next cycle
-        while (matchTimer.seconds() < 25 && opModeIsActive()) {
+        int cycle = 0;
+        while (matchTimer.seconds() < 25 && opModeIsActive() && cycle <= 4) {
             //TODO: Move arm from stacj to pole and back
-
+//            arm.ArmStackControl(cycle);
+//            claw.AutoControl(Claw.clawStatuses.OPEN);
+//            claw.AutoControl(Claw.clawStatuses.CLOSED);
+//            arm.ArmAutoControl(Arm.armStatuses.LOW_BACK);
+//            claw.AutoControl(Claw.clawStatuses.DROP);
+//
+//            cycle++;
 
         }
+
         //TODO: lower lift retract arm
         switch (signalZone) {
             case LEFT:
@@ -117,6 +126,7 @@ public class RightRedLowPole extends LinearOpMode {
 
 
         }
+        arm.ArmAutoControl(Arm.armStatuses.PICKUP);
 
 
 

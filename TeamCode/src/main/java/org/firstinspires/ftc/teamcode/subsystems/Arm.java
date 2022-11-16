@@ -30,7 +30,9 @@ public class Arm {
         public static double arm_high_front = 0.45;
         public static double arm_high_back = 0.65;
         public static double arm_mid_back = 0.75;
-        public static double arm_low_back = 0.75;
+        public static double arm_low_back = 0.65;
+        public static double stackTop = 0.25;
+        public static double stackDifference = 0.01;
 
     }
 
@@ -72,6 +74,11 @@ public class Arm {
         arm.setPosition(status.position());
     }
     // Control Functions
+
+    public void ArmStackControl (int cycle) {
+        double position = ArmConstants.stackTop - (cycle*ArmConstants.stackDifference);
+        arm.setPosition(position);
+    }
 
     // Takes in toggles from main teleop code - flip is a toggle, all others trigger on press
     public  void TeleopControl(boolean down, boolean low, boolean mid, boolean high, boolean flipToggle, boolean flipPress) {
