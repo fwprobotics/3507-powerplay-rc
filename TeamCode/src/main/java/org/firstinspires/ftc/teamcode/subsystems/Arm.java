@@ -35,7 +35,7 @@ public class Arm {
         public static double arm_low_back = 0.65;
         public static double stackTop = 0.25;
         public static double stackDifference = 0.01;
-        public static double armPowerModifier = 0.8;
+        public static double armPowerModifier = 1;
 
     }
 
@@ -129,7 +129,7 @@ public class Arm {
     }
 
     public void ManualControl(double input){
-        armCont.setPower(input*ArmConstants.armPowerModifier);
+        armCont.setPower((-input*ArmConstants.armPowerModifier));
     }
 
 }
