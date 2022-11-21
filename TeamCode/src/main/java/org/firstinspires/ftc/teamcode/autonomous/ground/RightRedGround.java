@@ -61,7 +61,7 @@ public class RightRedGround extends LinearOpMode {
                 .lineToConstantHeading(new Vector2d(44, -57))
                 .lineToConstantHeading(new Vector2d(44, -63))
                 .lineToConstantHeading(new Vector2d(12, -63))
-                .lineToConstantHeading(new Vector2d(12, -12))
+                .lineToConstantHeading(new Vector2d(12, -14))
                 .build();
 //        TrajectorySequence toLeftZone = drive.trajectorySequenceBuilder(toParking.end())
 //                //       .lineToLinearHeading(new Pose2d(60, -12, Math.toRadians(0)))
@@ -69,11 +69,11 @@ public class RightRedGround extends LinearOpMode {
 //                        .build();
         TrajectorySequence toMiddleZone = drive.trajectorySequenceBuilder(toParking.end())
             //    .lineToLinearHeading(new Pose2d(60, -12, Math.toRadians(0)))
-                .lineToConstantHeading(new Vector2d(36, -12))
+                .lineToConstantHeading(new Vector2d(36, -14))
                 .build();
         TrajectorySequence toRightZone = drive.trajectorySequenceBuilder(toParking.end())
 
-                                        .lineToConstantHeading(new Vector2d(60, -12))
+                                        .lineToConstantHeading(new Vector2d(60, -14))
                                                 .build();
         //TODO:Move lift up and extends arm to align with pole
 

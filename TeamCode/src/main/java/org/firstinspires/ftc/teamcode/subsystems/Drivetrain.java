@@ -47,7 +47,7 @@ public class Drivetrain {
 //        public static double y_modifier = 0.95;
 //        public static double x_modifier = 0.85;
         public static double speedFactor = 0.8;
-        public static double power_modifier = 0.8;
+        public static double power_modifier = 0.6;
 
     }
 

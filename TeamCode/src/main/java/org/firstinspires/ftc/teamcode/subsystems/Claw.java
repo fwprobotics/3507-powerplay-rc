@@ -12,7 +12,7 @@ public class Claw {
     public static class ClawPositions {
         public static double open = 1;
         public static double closed = 0;
-        public static double drop = 0.5;
+        public static double drop = 0.45;
     }
 
     public enum clawStatuses {

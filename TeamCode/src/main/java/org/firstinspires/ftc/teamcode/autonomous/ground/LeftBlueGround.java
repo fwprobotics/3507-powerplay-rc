@@ -59,15 +59,15 @@ public class LeftBlueGround extends LinearOpMode {
                 .lineToConstantHeading(new Vector2d(54, 57))
                 .lineToConstantHeading(new Vector2d(54, 63))
                 .lineToConstantHeading(new Vector2d(12, 63))
-                .lineToConstantHeading(new Vector2d(12, 12))
+                .lineToConstantHeading(new Vector2d(12, 14))
                 .build();
         TrajectorySequence toLeftZone = drive.trajectorySequenceBuilder(toParking.end())
                 //       .lineToLinearHeading(new Pose2d(60, -12, Math.toRadians(0)))
-                .lineToConstantHeading(new Vector2d(60, 12))
+                .lineToConstantHeading(new Vector2d(60, 14))
                         .build();
         TrajectorySequence toMiddleZone = drive.trajectorySequenceBuilder(toParking.end())
             //    .lineToLinearHeading(new Pose2d(60, -12, Math.toRadians(0)))
-                .lineToConstantHeading(new Vector2d(36, 12))
+                .lineToConstantHeading(new Vector2d(36, 14))
                 .build();
 //        TrajectorySequence toRightZone = drive.trajectorySequenceBuilder(toParking.end())
 //
