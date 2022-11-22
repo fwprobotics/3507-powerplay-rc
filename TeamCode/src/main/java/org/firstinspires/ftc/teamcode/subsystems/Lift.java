@@ -26,8 +26,8 @@ public class Lift {
     public enum dropoffOptions {
         FLOOR (0),
         LOW (0),
-        MEDIUM (-1800),
-        HIGH (-2600);
+        MEDIUM (-960),
+        HIGH (-1920);
 
         public int position;
         dropoffOptions(int position) {this.position = position;}
@@ -39,8 +39,8 @@ public class Lift {
 
     @Config
     public static class LiftConstants {
-        public static double power_modifier = 0.2;
-        public static double auto_power_modifier = 0.2;
+        public static double power_modifier = 0.3;
+        public static double auto_power_modifier = 0.3;
     }
 
     public Lift(liftRunMode runmode, LinearOpMode Input, HardwareMap hardwareMap, Telemetry telemetry) {
@@ -72,9 +72,11 @@ public class Lift {
                 rightLiftMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
                 rightLiftMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
                 rightLiftMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+                break;
 
-              //1  rightLiftMotor.setDirection(DcMotorSimple.Direction.REVERSE); // Reverse left side
         }
+        rightLiftMotor.setDirection(DcMotorSimple.Direction.REVERSE); // Reverse left side
+
     }
 
 
@@ -117,14 +119,23 @@ public class Lift {
         if (low) {
             setPosition(dropoffOptions.LOW);
         }
-        if (!floor & !high & !medium & !low & !leftLiftMotor.isBusy() & !rightLiftMotor.isBusy()) {
+        //if its not going to any position and the motors aren't busy or the run position is RUN_USING_ENCODER
+        if (!floor & !high & !medium & !low & ((!leftLiftMotor.isBusy() & !rightLiftMotor.isBusy()) || leftLiftMotor.getMode() == DcMotor.RunMode.RUN_USING_ENCODER)) {
 
-             leftLiftMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-             rightLiftMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-            leftLiftMotor.setPower(input * LiftConstants.power_modifier);
-            rightLiftMotor.setPower(input * LiftConstants.power_modifier); //Probably should/can get toned down
-             }
+            leftLiftMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+            rightLiftMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+            //keeps lift within range
+            if ((input < 0 & leftLiftMotor.getCurrentPosition() >= dropoffOptions.HIGH.position()) | (input > 0 & leftLiftMotor.getCurrentPosition() <= 0) ) {
+                leftLiftMotor.setPower(input * LiftConstants.power_modifier);
+                rightLiftMotor.setPower(input * LiftConstants.power_modifier); //Probably should/can get toned down
+            } else {
+                leftLiftMotor.setPower(0);
+                rightLiftMotor.setPower(0);
+            }
+        }
+
         l.telemetry.addData("left encoder", leftLiftMotor.getCurrentPosition());
         l.telemetry.addData("right encoder", rightLiftMotor.getCurrentPosition());
+
     }
 }
