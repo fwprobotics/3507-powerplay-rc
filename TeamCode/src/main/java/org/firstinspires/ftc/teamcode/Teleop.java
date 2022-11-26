@@ -5,6 +5,7 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
+import org.firstinspires.ftc.teamcode.subsystems.Arm2;
 import org.firstinspires.ftc.teamcode.subsystems.Drivetrain;
 import org.firstinspires.ftc.teamcode.subsystems.Lift;
 import org.firstinspires.ftc.teamcode.subsystems.ToggleButton;
@@ -25,7 +26,7 @@ public class Teleop extends LinearOpMode {
     ToggleButton flip;
     ToggleButton clawToggle;
     Claw claw;
-    Arm arm;
+    Arm2 arm;
 
 
 
@@ -42,7 +43,7 @@ public class Teleop extends LinearOpMode {
         flip = new ToggleButton(false);
         clawToggle = new ToggleButton(false);
         claw = new Claw(hardwareMap);
-        arm = new Arm(this, hardwareMap, telemetry);
+        arm = new Arm2(this, hardwareMap, telemetry);
         telemetry.addLine("Ready and WAITING :)");
         telemetry.update();
 
@@ -64,9 +65,9 @@ public class Teleop extends LinearOpMode {
               //  clawToggle.toggle(gamepad2.right_bumper);
                 claw.TeleopControl(gamepad2.a, gamepad2.y, gamepad2.b);
                 lift.teleOpControl(gamepad2.right_stick_y, high.newPress(), low.newPress(), pickup.newPress(), mid.newPress());
-                arm.ManualControl(gamepad2.left_stick_y);
+              //  arm.ManualControl(gamepad2.left_stick_y);
                 if (high.newPress() || mid.newPress() || low.newPress() || pickup.newPress() || flip.newPress()) {
-                   // arm.TeleopControl(pickup.newPress(), low.newPress(), mid.newPress(), high.newPress(), flip.state(), flip.newPress());
+                    arm.TeleopControl(pickup.newPress(), low.newPress(), mid.newPress(), high.newPress(), flip.state());
                 }
                 telemetry.update();
 
