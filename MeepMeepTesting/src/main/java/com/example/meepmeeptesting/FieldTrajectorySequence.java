@@ -44,44 +44,47 @@ public class FieldTrajectorySequence {
         } catch (EmptySequenceException e) {
             startPose = lastPose;
         }
+        if (doesIntersects(startPose, getStreetNum(toPose.getX()), 0, false) && doesIntersects(startPose, 0, getStreetNum(toPose.getY()), true))
+        {
 
-        Pose2d startStreet = new Pose2d(getXStreet(startPose, startPose), getYStreet(startPose, startPose), startPose.getHeading());
-        double startc;
-        if (!xfirst) {
-            if (doesIntersects(startPose.getX())) {
-                startc = startStreet.getY();
-                trajectory.lineToLinearHeading(new Pose2d(startStreet.getX(), startPose.getY(), startPose.getHeading()));
+            Pose2d startStreet = new Pose2d(getXStreet(startPose, startPose), getYStreet(startPose, startPose), startPose.getHeading());
+            double startc;
+            if (!xfirst) {
+                if ((doesIntersects(startPose, false))) {
+                    startc = startPose.getY();
+                    trajectory.lineToLinearHeading(new Pose2d(startStreet.getX(), startPose.getY(), startPose.getHeading()));
+                } else {
+                    startc = startPose.getY();
+                }
+                if (getYStreet(toPose, startStreet) != startc || (!inStreet(toPose, getStreetNum(startStreet.getY()), true)) && (!inStreet(toPose, getStreetNum(startStreet.getX()), false))) {
+                    trajectory.lineToLinearHeading(new Pose2d(startStreet.getX(), getYStreet(toPose, startStreet), startPose.getHeading()));
+                }
+                if (startStreet.getX() != getXStreet(toPose, startStreet) & (!inStreet(toPose, getStreetNum(getYStreet(toPose, startStreet)), true))) {
+                    trajectory.lineToLinearHeading(new Pose2d(getXStreet(toPose, startStreet), getYStreet(toPose, startStreet), toPose.getHeading()));
+                }
             } else {
-                startc = startPose.getY();
-            }
-            if (getYStreet(toPose, startStreet) != startc) {
-                trajectory.lineToLinearHeading(new Pose2d(startStreet.getX(), getYStreet(toPose, startStreet), toPose.getHeading()));
-            }
-            if (startStreet.getX() != getXStreet(toPose, startStreet) &(!inStreet(toPose, getStreetNum(getYStreet(toPose, startStreet)), true))) {
-               trajectory.lineToLinearHeading(new Pose2d(getXStreet(toPose, startStreet), getYStreet(toPose, startStreet), toPose.getHeading()));
-            }
-        } else {
-            if (doesIntersects(startPose.getY())) {
-                startc = startStreet.getX();
-                trajectory.lineToLinearHeading(new Pose2d(startPose.getX(), startStreet.getY(), startPose.getHeading()));
-            } else {
-                startc = startPose.getX();
-            }
-            if (startc != getXStreet(toPose, startStreet)) {
-                trajectory.lineToLinearHeading(new Pose2d(getXStreet(toPose, startStreet), startStreet.getY(), toPose.getHeading()));
-            }
-            if ((getYStreet(toPose, startStreet) != startStreet.getY())  &(!inStreet(toPose, getStreetNum(getXStreet(toPose, startStreet)), false))) {
-                trajectory.lineToLinearHeading(new Pose2d(getXStreet(toPose, startStreet), getYStreet(toPose, startStreet), toPose.getHeading()));
-            }
+                if (doesIntersects(startPose, true)) {
+                    startc = startPose.getX();
+                    trajectory.lineToLinearHeading(new Pose2d(startPose.getX(), startStreet.getY(), startPose.getHeading()));
+                } else {
+                    startc = startPose.getX();
+                }
+                if ((startc != getXStreet(toPose, startStreet)) & (!inStreet(toPose, getStreetNum(startStreet.getY()), true)) & (!inStreet(toPose, getStreetNum(startStreet.getX()), false))) {
+                    trajectory.lineToLinearHeading(new Pose2d(getXStreet(toPose, startStreet), startStreet.getY(), toPose.getHeading()));
+                }
+                if ((getYStreet(toPose, startStreet) != startStreet.getY()) & (!inStreet(toPose, getStreetNum(getXStreet(toPose, startStreet)), false))) {
+                    trajectory.lineToLinearHeading(new Pose2d(getXStreet(toPose, startStreet), getYStreet(toPose, startStreet), toPose.getHeading()));
+                }
 
+            }
         }
         lastPose = toPose;
         trajectory.lineToLinearHeading(toPose);
         return this;
 
     }
-    public FieldTrajectorySequence toPole(int poleX, int poleY, sides side, boolean xfirst) {
-        Pose2d targetPole = getTargetPole(poleX, poleY, side);
+    public FieldTrajectorySequence toPole(int poleX, int poleY, sides side, boolean backwardsDrop, boolean xfirst) {
+        Pose2d targetPole = getTargetPole(poleX, poleY, side, backwardsDrop);
         return toLocation(targetPole, xfirst);
     }
 
@@ -139,12 +142,74 @@ public class FieldTrajectorySequence {
         return trajectory.build();
     }
 
-    public boolean doesIntersects(double start) {
-        if ((Math.abs(start % 24) > getDimension()/2 ) & Math.abs(start % 24) <  (24 - (getDimension() /2))) {
+    public boolean doesIntersects(Pose2d start, boolean x) {
+        double minX;
+        double maxX;
+        double minY;
+        double maxY;
+        if (Math.toDegrees(start.getHeading()) == 0 || Math.toRadians(start.getHeading()) == 180) {
+            minX = start.getX()-length/2;
+            maxX = start.getX()+length/2;
+            minY = start.getY()-width/2;
+            maxY = start.getY()+width/2;
+        } else {
+            minX = start.getX()-width/2;
+            maxX = start.getX()+width/2;
+            minY = start.getY()-length/2;
+            maxY = start.getY()+length/2;
+        }
+        double xStreet = getStreetNum(getXStreet(start, start));
+        double yStreet = getStreetNum(getYStreet(start, start));
+        double tileStartX = (xStreet*24)+1;
+        double tileEndX = (xStreet*24)+(23);
+        double tileStartY = (yStreet*24)+1;
+        double tileEndY = (yStreet*24)+(23);
+        if ((minX >= tileStartX) & (maxX <= tileEndX) & (!x)) {
+            return false;
+        } else if ( (x) & (minY >= tileStartY) & (maxY <= tileEndY)){
             return false;
         } else {
             return true;
         }
+//        if ((Math.abs(start % 24) > (getDimension()/2)-6 ) & Math.abs(start % 24) <  (24 - ((getDimension() /2)-6))) {
+//            return false;
+//        } else {
+//            return true;
+//        }
+    }
+
+    public boolean doesIntersects(Pose2d start, double xStreet, double yStreet, boolean x) {
+        double minX;
+        double maxX;
+        double minY;
+        double maxY;
+        if (Math.toDegrees(start.getHeading()) == 0 || Math.toRadians(start.getHeading()) == 180) {
+            minX = start.getX()-length/2;
+            maxX = start.getX()+length/2;
+            minY = start.getY()-width/2;
+            maxY = start.getY()+width/2;
+        } else {
+            minX = start.getX()-width/2;
+            maxX = start.getX()+width/2;
+            minY = start.getY()-length/2;
+            maxY = start.getY()+length/2;
+        }
+        double tileStartX = (xStreet*24)+1;
+        double tileEndX = (xStreet*24)+(23);
+        double tileStartY = (yStreet*24)+1;
+        double tileEndY = (yStreet*24)+(23);
+        if ((minX >= tileStartX) & (maxX <= tileEndX) & (!x)) {
+            return false;
+        } else if ( (x) & (minY >= tileStartY) & (maxY <= tileEndY)){
+            return false;
+        } else {
+            return true;
+        }
+//        if ((Math.abs(start % 24) > (getDimension()/2)-6 ) & Math.abs(start % 24) <  (24 - ((getDimension() /2)-6))) {
+//            return false;
+//        } else {
+//            return true;
+//        }
     }
 
 
@@ -206,26 +271,31 @@ public class FieldTrajectorySequence {
             return lane;
         }
     }
-    public Pose2d getTargetPole(int poleX, int poleY, sides side) {
+    public Pose2d getTargetPole(int poleX, int poleY, sides side, boolean backwardsDrop) {
         poleX *= 24;
         poleY *= 24;
+
         int heading = 0;
         switch (side) {
             case LEFT:
                 poleX -= this.length;
                 heading = 0;
+                if (backwardsDrop) heading = 180;
                 break;
             case RIGHT:
                 poleX += this.length;
                 heading = 180;
+                if (backwardsDrop) heading = 0;
                 break;
             case UP:
                 poleY += this.length;
-                heading = 270;
+                heading = -90;
+                if (backwardsDrop) heading = 90;
                 break;
             case DOWN:
                 poleY -= this.length;
                 heading = 90;
+                if (backwardsDrop) heading = -90;
                 break;
 
         }

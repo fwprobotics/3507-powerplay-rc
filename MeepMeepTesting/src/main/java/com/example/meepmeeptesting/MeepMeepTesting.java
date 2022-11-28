@@ -53,11 +53,15 @@ public class MeepMeepTesting {
 //                    TrajectorySequenceBuilder trajectory = drive.trajectorySequenceBuilder(new Pose2d(32, -48, Math.toRadians(90)));
 //                    trajectory = field.toPole(trajectory, drive, -1, 0, Field.sides.RIGHT, true);
 
-                    FieldTrajectorySequence fieldTrajectorySequence = field.createFieldTrajectory(new Pose2d(32, -66))
-                            .toPole(0, -1, FieldTrajectorySequence.sides.RIGHT, true)
+                    FieldTrajectorySequence fieldTrajectorySequence = field.createFieldTrajectory(new Pose2d(32, -66, Math.toRadians(-90)))
+                            .toPole(0, -1, FieldTrajectorySequence.sides.RIGHT, true, true)
                             .toStack(false)
+                            .toPole(1, 0, FieldTrajectorySequence.sides.DOWN, true, false)
+                            .toStack(false)
+                            .toPole(1, 0, FieldTrajectorySequence.sides.DOWN, true, false)
+                         //   .toStack(false)
+
                             ;
-                    fieldTrajectorySequence.trajectory.lineToLinearHeading(new Pose2d(0, 0));
                     return fieldTrajectorySequence.toSignalZone(1).build();
 
 
