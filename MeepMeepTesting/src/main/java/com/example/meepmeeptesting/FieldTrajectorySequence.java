@@ -10,7 +10,9 @@ import com.noahbres.meepmeep.roadrunner.trajectorysequence.TrajectorySequence;
 import com.noahbres.meepmeep.roadrunner.trajectorysequence.TrajectorySequenceBuilder;
 
 public class FieldTrajectorySequence {
-    public static int border = 6;
+    public double border;
+    public static double coneoffset = 15.5;
+    public static int clawlength = 4;
 
     public enum sides {
         UP,
@@ -33,6 +35,7 @@ public class FieldTrajectorySequence {
         autoZone = aZ;
         trajectory = t;
         lastPose = startPose;
+        border = (24-getDimension())/2;
     }
 
 
@@ -70,7 +73,7 @@ public class FieldTrajectorySequence {
                     startc = startPose.getX();
                 }
                 if ((startc != getXStreet(toPose, startStreet)) & (!inStreet(toPose, getStreetNum(startStreet.getY()), true)) & (!inStreet(toPose, getStreetNum(startStreet.getX()), false))) {
-                    trajectory.lineToLinearHeading(new Pose2d(getXStreet(toPose, startStreet), startStreet.getY(), toPose.getHeading()));
+                    trajectory.lineToLinearHeading(new Pose2d(getXStreet(toPose, startStreet), startStreet.getY(), startStreet.getHeading()));
                 }
                 if ((getYStreet(toPose, startStreet) != startStreet.getY()) & (!inStreet(toPose, getStreetNum(getXStreet(toPose, startStreet)), false))) {
                     trajectory.lineToLinearHeading(new Pose2d(getXStreet(toPose, startStreet), getYStreet(toPose, startStreet), toPose.getHeading()));
@@ -95,22 +98,22 @@ public class FieldTrajectorySequence {
             case REDRIGHT:
                 x = (zone*24)-12;
                 y = -((getDimension()/2)+border);
-                toLocation( new Pose2d(x, y, Math.toRadians(90)), false);
+                toLocation( new Pose2d(x, y, lastPose.getHeading()), false);
                 break;
             case REDLEFT:
                 x = ((4-zone)*24)-12;
                 y = -((getDimension()/2)+border);
-                toLocation(new Pose2d(x, y, Math.toRadians(90)), false);
+                toLocation(new Pose2d(x, y, lastPose.getHeading()), false);
                 break;
             case BLUERIGHT:
                 x = ((4-zone)*24)-12;
                 y = (getDimension()/2)+border;
-                toLocation(new Pose2d(x, y, Math.toRadians(-90)), false);
+                toLocation(new Pose2d(x, y, lastPose.getHeading()), false);
                 break;
             case BLUELEFT:
                 x = (zone*24)-12;
                 y = (getDimension()/2)+border;
-                toLocation(new Pose2d(x, y, Math.toRadians(-90)), false);
+                toLocation(new Pose2d(x, y, lastPose.getHeading()), false);
                 break;
 
         }
@@ -118,7 +121,7 @@ public class FieldTrajectorySequence {
     }
 
     public FieldTrajectorySequence toStack(boolean xfirst) {
-        double x = 72-this.length;
+        double x = 72-(this.length/2+18.5);
         double y = 12;
 
         switch (autoZone) {
@@ -184,15 +187,15 @@ public class FieldTrajectorySequence {
         double minY;
         double maxY;
         if (Math.toDegrees(start.getHeading()) == 0 || Math.toRadians(start.getHeading()) == 180) {
-            minX = start.getX()-length/2;
-            maxX = start.getX()+length/2;
+            minX = start.getX()-(length/2+clawlength);
+            maxX = start.getX()+(length/2+clawlength);
             minY = start.getY()-width/2;
             maxY = start.getY()+width/2;
         } else {
             minX = start.getX()-width/2;
             maxX = start.getX()+width/2;
-            minY = start.getY()-length/2;
-            maxY = start.getY()+length/2;
+            minY = start.getY()-(length/2-clawlength);
+            maxY = start.getY()+(length/2-clawlength);
         }
         double tileStartX = (xStreet*24)+1;
         double tileEndX = (xStreet*24)+(23);
@@ -278,22 +281,22 @@ public class FieldTrajectorySequence {
         int heading = 0;
         switch (side) {
             case LEFT:
-                poleX -= this.length;
+                poleX -= this.length/2+coneoffset;
                 heading = 0;
                 if (backwardsDrop) heading = 180;
                 break;
             case RIGHT:
-                poleX += this.length;
+                poleX += this.length/2+coneoffset;
                 heading = 180;
                 if (backwardsDrop) heading = 0;
                 break;
             case UP:
-                poleY += this.length;
+                poleY += this.length/2+coneoffset;
                 heading = -90;
                 if (backwardsDrop) heading = 90;
                 break;
             case DOWN:
-                poleY -= this.length;
+                poleY -= this.length/2+coneoffset;
                 heading = 90;
                 if (backwardsDrop) heading = -90;
                 break;

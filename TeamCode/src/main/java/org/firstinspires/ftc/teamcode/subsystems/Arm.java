@@ -64,7 +64,7 @@ public class Arm {
         realTelemetry = telemetry;
 
     //    arm = hardwareMap.servo.get("armservo"); // Really not important which is which
-        armCont = hardwareMap.crservo.get("armservo");
+        arm = hardwareMap.servo.get("armservo");
      //   arm.setPosition(armStatus.position());
 
 

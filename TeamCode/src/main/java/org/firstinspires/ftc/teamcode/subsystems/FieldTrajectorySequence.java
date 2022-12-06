@@ -12,15 +12,18 @@ import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequenceBuild
 public class FieldTrajectorySequence {
     @Config
     public static class FieldTrajContstants {
-        public static int border = 6;
+        public static double coneoffset = 8;
+        public static int clawlength = 4;
+        public static double centeroffset = 0;
     }
+    public double border;
 
 
     public enum sides {
         UP,
         LEFT,
         RIGHT,
-        DOWN
+        DOWN;
     }
 
 
@@ -37,6 +40,7 @@ public class FieldTrajectorySequence {
         autoZone = aZ;
         trajectory = t;
         lastPose = startPose;
+        border = (24-getDimension())/2;
     }
 
 
@@ -74,7 +78,7 @@ public class FieldTrajectorySequence {
                     startc = startPose.getX();
                 }
                 if ((startc != getXStreet(toPose, startStreet)) & (!inStreet(toPose, getStreetNum(startStreet.getY()), true)) & (!inStreet(toPose, getStreetNum(startStreet.getX()), false))) {
-                    trajectory.lineToLinearHeading(new Pose2d(getXStreet(toPose, startStreet), startStreet.getY(), toPose.getHeading()));
+                    trajectory.lineToLinearHeading(new Pose2d(getXStreet(toPose, startStreet), startStreet.getY(), startStreet.getHeading()));
                 }
                 if ((getYStreet(toPose, startStreet) != startStreet.getY()) & (!inStreet(toPose, getStreetNum(getXStreet(toPose, startStreet)), false))) {
                     trajectory.lineToLinearHeading(new Pose2d(getXStreet(toPose, startStreet), getYStreet(toPose, startStreet), toPose.getHeading()));
@@ -98,23 +102,23 @@ public class FieldTrajectorySequence {
         switch (this.autoZone) {
             case REDRIGHT:
                 x = (zone*24)-12;
-                y = -((getDimension()/2)+FieldTrajContstants.border);
-                toLocation( new Pose2d(x, y, Math.toRadians(90)), false);
+                y = -((getDimension()/2)+border);
+                toLocation( new Pose2d(x, y, lastPose.getHeading()), false);
                 break;
             case REDLEFT:
                 x = ((4-zone)*24)-12;
-                y = -((getDimension()/2)+FieldTrajContstants.border);
-                toLocation(new Pose2d(x, y, Math.toRadians(90)), false);
+                y = -((getDimension()/2)+border);
+                toLocation(new Pose2d(x, y, lastPose.getHeading()), false);
                 break;
             case BLUERIGHT:
                 x = ((4-zone)*24)-12;
-                y = (getDimension()/2)+FieldTrajContstants.border;
-                toLocation(new Pose2d(x, y, Math.toRadians(-90)), false);
+                y = (getDimension()/2)+border;
+                toLocation(new Pose2d(x, y, lastPose.getHeading()), false);
                 break;
             case BLUELEFT:
                 x = (zone*24)-12;
-                y = (getDimension()/2)+FieldTrajContstants.border;
-                toLocation(new Pose2d(x, y, Math.toRadians(-90)), false);
+                y = (getDimension()/2)+border;
+                toLocation(new Pose2d(x, y, lastPose.getHeading()), false);
                 break;
 
         }
@@ -122,7 +126,7 @@ public class FieldTrajectorySequence {
     }
 
     public FieldTrajectorySequence toStack(boolean xfirst) {
-        double x = 72-this.length;
+        double x = 72-(this.length/2+18.5);
         double y = 12;
 
         switch (autoZone) {
@@ -188,15 +192,15 @@ public class FieldTrajectorySequence {
         double minY;
         double maxY;
         if (Math.toDegrees(start.getHeading()) == 0 || Math.toRadians(start.getHeading()) == 180) {
-            minX = start.getX()-length/2;
-            maxX = start.getX()+length/2;
+            minX = start.getX()-(length/2+FieldTrajContstants.clawlength);
+            maxX = start.getX()+(length/2+FieldTrajContstants.clawlength);
             minY = start.getY()-width/2;
             maxY = start.getY()+width/2;
         } else {
             minX = start.getX()-width/2;
             maxX = start.getX()+width/2;
-            minY = start.getY()-length/2;
-            maxY = start.getY()+length/2;
+            minY = start.getY()-(length/2-FieldTrajContstants.clawlength);
+            maxY = start.getY()+(length/2-FieldTrajContstants.clawlength);
         }
         double tileStartX = (xStreet*24)+1;
         double tileEndX = (xStreet*24)+(23);
@@ -246,8 +250,8 @@ public class FieldTrajectorySequence {
     public double getXStreet(Pose2d pos, Pose2d start) {
         if (pos.getX()%24 == 0) {
             double streetNum = pos.getX()/24;
-            double lane1 = (streetNum * 24) + FieldTrajContstants.border + getDimension() / 2;
-            double lane2 = ((streetNum-1) * 24) + FieldTrajContstants.border + getDimension() / 2;
+            double lane1 = (streetNum * 24) + border + getDimension() / 2;
+            double lane2 = ((streetNum-1) * 24) + border + getDimension() / 2;
             if (Math.abs(lane1-start.getX()) <= Math.abs(lane2-start.getX())) {
                 return lane1;
             } else {
@@ -255,15 +259,15 @@ public class FieldTrajectorySequence {
             }
         } else {
             double streetNum = Math.floor(pos.getX() / 24);
-            double lane = (streetNum * 24) + FieldTrajContstants.border + getDimension() / 2;
+            double lane = (streetNum * 24) + border + getDimension() / 2;
             return lane;
         }
     }
     public double getYStreet(Pose2d pos, Pose2d start) {
         if (pos.getY()%24 == 0) {
             double streetNum = pos.getY()/24;
-            double lane1 = (streetNum * 24) + FieldTrajContstants.border + getDimension() / 2;
-            double lane2 = ((streetNum-1) * 24) + FieldTrajContstants.border + getDimension() / 2;
+            double lane1 = (streetNum * 24) + border + getDimension() / 2;
+            double lane2 = ((streetNum-1) * 24) + border + getDimension() / 2;
             if (Math.abs(lane1-start.getY()) <= Math.abs(lane2-start.getY())) {
                 return lane1;
             } else {
@@ -271,7 +275,7 @@ public class FieldTrajectorySequence {
             }
         } else {
             double streetNum = Math.floor(pos.getY() / 24);
-            double lane = (streetNum * 24) + FieldTrajContstants.border + getDimension() / 2;
+            double lane = (streetNum * 24) + border + getDimension() / 2;
             return lane;
         }
     }
@@ -282,22 +286,26 @@ public class FieldTrajectorySequence {
         int heading = 0;
         switch (side) {
             case LEFT:
-                poleX -= this.length;
+                poleX -= this.length/2+FieldTrajContstants.coneoffset;
+                poleY += FieldTrajContstants.centeroffset;
                 heading = 0;
                 if (backwardsDrop) heading = 180;
                 break;
             case RIGHT:
-                poleX += this.length;
+                poleX += this.length/2+FieldTrajContstants.coneoffset;
+                poleY += FieldTrajContstants.centeroffset;
                 heading = 180;
                 if (backwardsDrop) heading = 0;
                 break;
             case UP:
-                poleY += this.length;
+                poleY += this.length/2+FieldTrajContstants.coneoffset;
+                poleX += FieldTrajContstants.centeroffset;
                 heading = -90;
                 if (backwardsDrop) heading = 90;
                 break;
             case DOWN:
-                poleY -= this.length;
+                poleY -= this.length/2+FieldTrajContstants.coneoffset;
+                poleX += FieldTrajContstants.centeroffset;
                 heading = 90;
                 if (backwardsDrop) heading = -90;
                 break;

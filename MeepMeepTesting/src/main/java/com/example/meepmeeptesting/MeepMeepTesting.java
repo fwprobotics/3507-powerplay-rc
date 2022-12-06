@@ -14,11 +14,11 @@ public class MeepMeepTesting {
 
 
         RoadRunnerBotEntity myBot = new DefaultBotBuilder(meepMeep)
-                .setDimensions(9.84252, 9.84252)
+                .setDimensions(15, 16.5)
                 // Set bot constraints: maxVel, maxAccel, maxAngVel, maxAngAccel, track width
                 .setConstraints(54.852618423869984, 30, 3, 3, 8.3)
                 .followTrajectorySequence(drive -> {
-                    Field field = new Field(drive, 9.84252, 9.84252, Field.autoZones.REDRIGHT);
+                    Field field = new Field(drive, 15, 16.5, Field.autoZones.REDRIGHT);
                     //new Pose2d(36, -66, Math.toRadians(90))
                     //new Pose2d(12, -24, Math.toRadians(180))
 //                        drive.trajectorySequenceBuilder(new Pose2d(32, -66, Math.toRadians(90)))
@@ -53,12 +53,16 @@ public class MeepMeepTesting {
 //                    TrajectorySequenceBuilder trajectory = drive.trajectorySequenceBuilder(new Pose2d(32, -48, Math.toRadians(90)));
 //                    trajectory = field.toPole(trajectory, drive, -1, 0, Field.sides.RIGHT, true);
 
-                    FieldTrajectorySequence fieldTrajectorySequence = field.createFieldTrajectory(new Pose2d(32, -66, Math.toRadians(-90)))
-                            .toPole(0, -1, FieldTrajectorySequence.sides.RIGHT, true, true)
+                    FieldTrajectorySequence fieldTrajectorySequence = field.createFieldTrajectory(new Pose2d(32, -66, Math.toRadians(90)))
+                            .toPole(2, -1, FieldTrajectorySequence.sides.UP, false, true)
                             .toStack(false)
-                            .toPole(1, 0, FieldTrajectorySequence.sides.DOWN, true, false)
+                            .toPole(2, -1, FieldTrajectorySequence.sides.UP, false, false)
                             .toStack(false)
-                            .toPole(1, 0, FieldTrajectorySequence.sides.DOWN, true, false)
+                            .toPole(2, -1, FieldTrajectorySequence.sides.UP, false, false)
+                            .toStack(false)
+                            .toPole(2, -1, FieldTrajectorySequence.sides.UP, false, false)
+                            .toStack(false)
+                            .toPole(2, -1, FieldTrajectorySequence.sides.UP, false, false)
                          //   .toStack(false)
 
                             ;

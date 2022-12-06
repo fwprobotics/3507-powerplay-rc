@@ -25,12 +25,15 @@ public class Arm2 {
     public static class ArmConstants {
 
         public static double arm_pickup = 0;
-        public static double arm_low_front = 0.05;
-        public static double arm_mid_front = 0.23;
+        public static double arm_low_front = 0.55;
+        public static double arm_mid_front = 0.55;
         public static double arm_high_front = 0.45;
         public static double arm_high_back = 0.65;
         public static double arm_mid_back = 0.75;
         public static double arm_low_back = 0.75;
+        public static double stack_top = 0.4;
+        public static double stack_difference = 0.04;
+        public static double arm_speed = 0.01;
 
     }
 
@@ -62,7 +65,7 @@ public class Arm2 {
 
         arm = hardwareMap.servo.get("armservo"); // Really not important which is which
 
-        //   arm.setPosition(armStatus.position());
+           //arm.setPosition(armStatus.frontPosition);
 
 
     }
@@ -70,10 +73,29 @@ public class Arm2 {
     // Use this as auto function
     public void setArmPosition(armStatuses status, boolean Flip) {
         if (Flip){
-            arm.setPosition(status.getBackPosition());
+            moveArm(status.getBackPosition());
         } else {
-            arm.setPosition(status.getFrontPosition());
+            moveArm(status.getFrontPosition());
         }
+    }
+
+    public void ArmStackControl (int cycle) {
+        double position = ArmConstants.stack_top - (cycle* ArmConstants.stack_difference);
+        moveArm(position);
+    }
+
+    public void moveArm(double pos){
+        double currentPos = arm.getPosition();
+        while (currentPos != pos) {
+            if (currentPos < pos){
+                arm.setPosition(currentPos + ArmConstants.arm_speed);
+            } else if (currentPos > pos){
+                arm.setPosition(currentPos - ArmConstants.arm_speed);
+            }
+            currentPos = arm.getPosition();
+        }
+
+
     }
 
 

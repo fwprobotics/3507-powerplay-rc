@@ -13,7 +13,10 @@ import org.firstinspires.ftc.teamcode.ApriltagDetectionPipeline;
 import org.firstinspires.ftc.teamcode.drive.DriveConstants;
 import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
 import org.firstinspires.ftc.teamcode.subsystems.Arm;
+import org.firstinspires.ftc.teamcode.subsystems.Arm2;
 import org.firstinspires.ftc.teamcode.subsystems.Claw;
+import org.firstinspires.ftc.teamcode.subsystems.Field;
+import org.firstinspires.ftc.teamcode.subsystems.FieldTrajectorySequence;
 import org.firstinspires.ftc.teamcode.subsystems.Lift;
 import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequence;
 import org.openftc.easyopencv.OpenCvCamera;
@@ -21,7 +24,7 @@ import org.openftc.easyopencv.OpenCvCameraFactory;
 import org.openftc.easyopencv.OpenCvCameraRotation;
 
 ;
-@Disabled
+
 @Autonomous
 public class RightRedLowPole extends LinearOpMode {
 
@@ -42,9 +45,10 @@ public class RightRedLowPole extends LinearOpMode {
 
         SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
      //   Lift lift = new Lift(Lift.liftRunMode.AUTONOMOUS, this, hardwareMap, telemetry);
-        Arm arm = new Arm(this, hardwareMap, telemetry);
+        Arm2 arm = new Arm2(this, hardwareMap, telemetry);
         Claw claw = new Claw(hardwareMap);
-        Pose2d startPose = new Pose2d(30, -66, Math.toRadians(90));
+        Pose2d startPose = new Pose2d(32, -66, Math.toRadians(90));
+        Field field = new Field(drive, 15, 16.5, Field.autoZones.REDRIGHT);
         drive.setPoseEstimate(startPose);
         ElapsedTime matchTimer = new ElapsedTime();
         initCV();
@@ -57,19 +61,22 @@ public class RightRedLowPole extends LinearOpMode {
 //                .splineToSplineHeading(new Pose2d(66, -18, Math.toRadians(180)), Math.toRadians(0))
 //                .build();
 
-        TrajectorySequence startSequence = drive.trajectorySequenceBuilder(startPose)
-                //.splineToConstantHeading(new Vector2d(30, -60), Math.toRadians(0))
-                .addTemporalMarker(0.5, () -> {
-                    arm.ArmAutoControl(Arm.armStatuses.LOW_BACK);
-        })
-                .splineToConstantHeading(new Vector2d(54, -63), Math.toRadians(0), SampleMecanumDrive.getVelocityConstraint(30, DriveConstants.MAX_ANG_VEL, DriveConstants.TRACK_WIDTH), SampleMecanumDrive.getAccelerationConstraint(DriveConstants.MAX_ACCEL))
-                .splineToConstantHeading(new Vector2d(54, -36), Math.toRadians(0))
-                .splineToConstantHeading(new Vector2d(54, -20), Math.toRadians(0))
-                .lineToLinearHeading(new Pose2d(52, -18, Math.toRadians(35)))
-
-                //.strafeTo(new Vector2d(12, -55))
-                // .lineToSplineHeading(new Pose2d(12, -24, Math.toRadians(180)))
-
+//        TrajectorySequence startSequence = drive.trajectorySequenceBuilder(startPose)
+//                //.splineToConstantHeading(new Vector2d(30, -60), Math.toRadians(0))
+//                .addTemporalMarker(0.5, () -> {
+//                    arm.ArmAutoControl(Arm.armStatuses.LOW_BACK);
+//        })
+//                .splineToConstantHeading(new Vector2d(54, -63), Math.toRadians(0), SampleMecanumDrive.getVelocityConstraint(30, DriveConstants.MAX_ANG_VEL, DriveConstants.TRACK_WIDTH), SampleMecanumDrive.getAccelerationConstraint(DriveConstants.MAX_ACCEL))
+//                .splineToConstantHeading(new Vector2d(54, -36), Math.toRadians(0))
+//                .splineToConstantHeading(new Vector2d(54, -20), Math.toRadians(0))
+//                .lineToLinearHeading(new Pose2d(52, -18, Math.toRadians(35)))
+//
+//                //.strafeTo(new Vector2d(12, -55))
+//                // .lineToSplineHeading(new Pose2d(12, -24, Math.toRadians(180)))
+//
+//                .build();
+        TrajectorySequence startSequence = field.createFieldTrajectory(startPose)
+                .toPole(2, -1, FieldTrajectorySequence.sides.UP, false, true)
                 .build();
 
         TrajectorySequence toParking = drive.trajectorySequenceBuilder(startSequence.end())
@@ -77,35 +84,47 @@ public class RightRedLowPole extends LinearOpMode {
                 .lineToConstantHeading(new Vector2d(36, -63))
                 .lineToConstantHeading(new Vector2d(36, -12))
                 .build();
-        TrajectorySequence toStack = drive.trajectorySequenceBuilder(startSequence.end())
-                .setReversed(true)
-                .lineToConstantHeading(new Vector2d(9, -12), SampleMecanumDrive.getVelocityConstraint(50, DriveConstants.MAX_ANG_VEL, DriveConstants.TRACK_WIDTH), SampleMecanumDrive.getAccelerationConstraint(30))
-                .forward(45)
-                .lineToLinearHeading(new Pose2d(60, -18, Math.toRadians(30)))
-
-                //.lineToConstantHeading(new Vector2d(60, -12))
-
-
+        TrajectorySequence toStack = field.createFieldTrajectory(startSequence.end())
+                .toStack(false)
                 .build();
-        TrajectorySequence toLeftZone = drive.trajectorySequenceBuilder(toParking.end())
-                .lineToLinearHeading(new Pose2d(60, -12, Math.toRadians(0)))
-                .lineToConstantHeading(new Vector2d(8, -12))
+
+
+        TrajectorySequence toCone =
+                field.createFieldTrajectory(toStack.end())
+                        .toPole(2, -1, FieldTrajectorySequence.sides.UP, false, true)
                         .build();
-        TrajectorySequence toMiddleZone = drive.trajectorySequenceBuilder(toParking.end())
-                .lineToLinearHeading(new Pose2d(60, -12, Math.toRadians(0)))
-                .lineToConstantHeading(new Vector2d(32, -12))
-                .build();
-        TrajectorySequence toRightZone = drive.trajectorySequenceBuilder(toParking.end())
 
-                                        .lineToConstantHeading(new Vector2d(66, -12))
-                                                .build();
+                //drive.trajectorySequenceBuilder(startSequence.end())
+//                .setReversed(true)
+//                .lineToConstantHeading(new Vector2d(9, -12), SampleMecanumDrive.getVelocityConstraint(50, DriveConstants.MAX_ANG_VEL, DriveConstants.TRACK_WIDTH), SampleMecanumDrive.getAccelerationConstraint(30))
+//                .forward(45)
+//                .lineToLinearHeading(new Pose2d(60, -18, Math.toRadians(30)))
+//
+//                //.lineToConstantHeading(new Vector2d(60, -12))
+//
+//
+//                .build();
+
         //TODO:Move lift up and extends arm to align with pole
 
 
+
+
+//        TrajectorySequence fieldTrajectorySequence = field.createFieldTrajectory(startPose)
+//                .toPole(2, -1, FieldTrajectorySequence.sides.UP, false, true)
+//                .toStack(false)
+//                .toPole(2, -1, FieldTrajectorySequence.sides.UP, false, false)
+//                .toStack(false)
+//                .toPole(2, -1, FieldTrajectorySequence.sides.UP, false, false)
+//                .toSignalZone(1).build ();
+        //   .toStack(false)
+
+        arm.setArmPosition(Arm2.armStatuses.LOW, false);
        // lift.setPosition(Lift.dropoffOptions.HIGH);
         drive.followTrajectorySequence(startSequence);
         claw.AutoControl(Claw.clawStatuses.OPEN);
-        drive.followTrajectorySequence(toParking);
+//        claw.AutoControl(Claw.clawStatuses.OPEN);
+//        drive.followTrajectorySequence(toParking);
        // arm.ArmAutoControl(Arm.armStatuses.PICKUP);
        // lift.setPosition(Lift.dropoffOptions.FLOOR);
 
@@ -114,31 +133,41 @@ public class RightRedLowPole extends LinearOpMode {
        // drive.followTrajectorySequence(toStack);
 
         //this repeats until there is not enough time left to complete next cycle
-//        int cycle = 0;
-//        while (matchTimer.seconds() < 25 && opModeIsActive() && cycle <= 4) {
-//            //TODO: Move arm from stacj to pole and back
-////            arm.ArmStackControl(cycle);
-////            claw.AutoControl(Claw.clawStatuses.OPEN);
-////            claw.AutoControl(Claw.clawStatuses.CLOSED);
-////            arm.ArmAutoControl(Arm.armStatuses.LOW_BACK);
-////            claw.AutoControl(Claw.clawStatuses.DROP);
-////
-////            cycle++;
+        int cycle = 0;
+        while (matchTimer.seconds() < 25 && opModeIsActive() && cycle <= 4) {
+            sleep(500);
+            //TODO: Move arm from stacj to pole and back
+            drive.followTrajectorySequence(toStack);
+            arm.ArmStackControl(cycle);
+           // claw.AutoControl(Claw.clawStatuses.OPEN);
+            sleep(1000);
+            claw.AutoControl(Claw.clawStatuses.CLOSED);
+            sleep(500);
+            arm.setArmPosition(Arm2.armStatuses.LOW, false);
+            sleep(1000);
+            drive.followTrajectorySequence(toCone);
+            claw.AutoControl(Claw.clawStatuses.OPEN);
+//            claw.AutoControl(Claw.clawStatuses.OPEN);
+//            claw.AutoControl(Claw.clawStatuses.CLOSED);
+//            arm.ArmAutoControl(Arm.armStatuses.LOW_BACK);
+//            claw.AutoControl(Claw.clawStatuses.DROP);
 //
-//        }
-
-        //TODO: lower lift retract arm
-        switch (signalZone) {
-            case LEFT:
-                drive.followTrajectorySequence(toLeftZone);
-                break;
-            case MIDDLE:
-                drive.followTrajectorySequence(toMiddleZone);
-                break;
-
+//            cycle++;
 
         }
-        arm.ArmAutoControl(Arm.armStatuses.PICKUP);
+
+        //TODO: lower lift retract arm
+//        switch (signalZone) {
+//            case LEFT:
+//                drive.followTrajectorySequence(toLeftZone);
+//                break;
+//            case MIDDLE:
+//                drive.followTrajectorySequence(toMiddleZone);
+//                break;
+//
+//
+//        }
+        arm.setArmPosition(Arm2.armStatuses.PICKUP, false);
 
 
 

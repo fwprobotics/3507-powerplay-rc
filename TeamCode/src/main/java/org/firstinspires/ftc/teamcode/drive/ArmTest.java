@@ -4,7 +4,7 @@ import com.acmerobotics.dashboard.config.Config;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
-import org.firstinspires.ftc.teamcode.subsystems.Arm;
+import org.firstinspires.ftc.teamcode.subsystems.Arm2;
 
 @TeleOp
 public class ArmTest extends LinearOpMode {
@@ -17,7 +17,7 @@ public class ArmTest extends LinearOpMode {
 
     @Override
     public void runOpMode() {
-        Arm arm = new Arm(this, hardwareMap, telemetry);
+        Arm2 arm = new Arm2(this, hardwareMap, telemetry);
         waitForStart();
         while (opModeIsActive()) {
             if (gamepad1.a) {
