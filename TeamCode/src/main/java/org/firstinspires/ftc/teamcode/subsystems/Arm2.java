@@ -25,15 +25,18 @@ public class Arm2 {
     public static class ArmConstants {
 
         public static double arm_pickup = 0;
-        public static double arm_low_front = 0.55;
-        public static double arm_mid_front = 0.55;
+        public static double arm_low_front = 0.5;
+        public static double arm_mid_front = 0.68;
         public static double arm_high_front = 0.45;
         public static double arm_high_back = 0.65;
         public static double arm_mid_back = 0.75;
         public static double arm_low_back = 0.75;
-        public static double stack_top = 0.4;
+        public static  double arm_auto_dropoff = 0.53;
+        public static double stack_top = 0.28;
         public static double stack_difference = 0.04;
-        public static double arm_speed = 0.01;
+        public static double arm_speed = 0.0005;
+        public static double tolerance = 0.01;
+        public static double teleop_speed = 0.002;
 
     }
 
@@ -41,7 +44,8 @@ public class Arm2 {
         PICKUP (ArmConstants.arm_pickup, ArmConstants.arm_pickup),
         LOW (ArmConstants.arm_low_front, ArmConstants.arm_low_back),
         MID (ArmConstants.arm_mid_front, ArmConstants.arm_mid_back),
-        HIGH (ArmConstants.arm_high_front, ArmConstants.arm_high_back);
+        HIGH (ArmConstants.arm_high_front, ArmConstants.arm_high_back),
+        AUTO (ArmConstants.arm_auto_dropoff, ArmConstants.arm_auto_dropoff);
 
 
         public double frontPosition;
@@ -56,6 +60,8 @@ public class Arm2 {
     }
 
     public armStatuses armStatus = armStatuses.PICKUP;
+    public double armPosition = 0;
+
 
 
     public Arm2(LinearOpMode Input, HardwareMap hardwareMap, Telemetry telemetry){
@@ -86,36 +92,70 @@ public class Arm2 {
 
     public void moveArm(double pos){
         double currentPos = arm.getPosition();
-        while (currentPos != pos) {
+        while (currentPos <= pos-ArmConstants.tolerance || currentPos >= pos+ArmConstants.tolerance) {
             if (currentPos < pos){
                 arm.setPosition(currentPos + ArmConstants.arm_speed);
             } else if (currentPos > pos){
                 arm.setPosition(currentPos - ArmConstants.arm_speed);
+            } else {
+                break;
             }
+
             currentPos = arm.getPosition();
+            realTelemetry.addData("armPos", currentPos);
+            realTelemetry.update();
         }
 
 
     }
 
 
+
+
     // Control Functions
 
 //     Takes in toggles from main teleop code - flip is a toggle, all others trigger on press
-    public void TeleopControl(boolean down, boolean low, boolean mid, boolean high, boolean flipToggle) {
+    public void TeleopControl(boolean down, boolean low, boolean mid, boolean high, boolean flipToggle, double manualInput) {
         if (down){
             armStatus = armStatuses.PICKUP;
+            armPosition = flipToggle ? (armStatus.getFrontPosition()) : armStatus.getBackPosition();
         }
         if (low){
             armStatus = armStatuses.LOW;
+            armPosition = flipToggle ? (armStatus.getFrontPosition()) : armStatus.getBackPosition();
         }
         if (mid){
             armStatus = armStatuses.MID;
+            armPosition = flipToggle ? (armStatus.getFrontPosition()) : armStatus.getBackPosition();
         }
-        if (high){
-            armStatus = armStatuses.HIGH;
+//        if (high){
+//            armStatus = armStatuses.HIGH;
+//            armPosition = flipToggle ? (armStatus.getFrontPosition()) : armStatus.getBackPosition();
+//        }
+
+        armPosition += ArmConstants.teleop_speed*manualInput;
+
+
+
+
+        //TODO: Add manual control
+
+
+
+
+    }
+
+    public void moveArmTeleop() {
+        double currentPos = arm.getPosition();
+        if (currentPos <= armPosition-ArmConstants.tolerance || currentPos >= armPosition+ArmConstants.tolerance) {
+            if (currentPos < armPosition) {
+                arm.setPosition(currentPos + ArmConstants.teleop_speed);
+            } else if (currentPos > armPosition) {
+                arm.setPosition(currentPos - ArmConstants.teleop_speed);
+            }
         }
-        setArmPosition(armStatus, flipToggle);
+        realTelemetry.addData("armPos", currentPos);
+        realTelemetry.update();
     }
 
 }

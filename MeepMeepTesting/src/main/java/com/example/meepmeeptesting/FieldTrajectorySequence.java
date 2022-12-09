@@ -11,7 +11,7 @@ import com.noahbres.meepmeep.roadrunner.trajectorysequence.TrajectorySequenceBui
 
 public class FieldTrajectorySequence {
     public double border;
-    public static double coneoffset = 15.5;
+    public static double coneoffset = 15;
     public static int clawlength = 4;
 
     public enum sides {

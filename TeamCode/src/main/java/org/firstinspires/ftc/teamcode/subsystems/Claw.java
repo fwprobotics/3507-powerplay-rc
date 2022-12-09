@@ -10,9 +10,9 @@ public class Claw {
 
     @Config
     public static class ClawPositions {
-        public static double open = 1;
-        public static double closed = 0;
-        public static double drop = 0.45;
+        public static double open = 0;
+        public static double closed = 1;
+        public static double drop = 0.55;
     }
 
     public enum clawStatuses {

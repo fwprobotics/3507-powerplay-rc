@@ -35,9 +35,13 @@ public class RightRedLowPole extends LinearOpMode {
     SignalZone signalZone;
 
     public enum SignalZone {
-        LEFT, // A
-        MIDDLE, // B
-        RIGHT // C
+        LEFT (1), // A
+        MIDDLE (2), // B
+        RIGHT (3); // C
+        public int zoneNum;
+        SignalZone(int zoneN) {
+            this.zoneNum = zoneN;
+        }
     }
 
     @Override
@@ -79,20 +83,24 @@ public class RightRedLowPole extends LinearOpMode {
                 .toPole(2, -1, FieldTrajectorySequence.sides.UP, false, true)
                 .build();
 
-        TrajectorySequence toParking = drive.trajectorySequenceBuilder(startSequence.end())
-                .lineToConstantHeading(new Vector2d(48, -63))
-                .lineToConstantHeading(new Vector2d(36, -63))
-                .lineToConstantHeading(new Vector2d(36, -12))
-                .build();
-        TrajectorySequence toStack = field.createFieldTrajectory(startSequence.end())
-                .toStack(false)
-                .build();
 
+        Pose2d clearPoseEnd = field.createFieldTrajectory(startPose).getTargetPole(2, -1, FieldTrajectorySequence.sides.UP, false);
+        TrajectorySequence toStack = field.createFieldTrajectory(startSequence.end()) //new Pose2d(clearPoseEnd.getX(), clearPoseEnd.getY(), Math.toRadians(0))
+                .toStack(false)
+
+                .build();
 
         TrajectorySequence toCone =
                 field.createFieldTrajectory(toStack.end())
                         .toPole(2, -1, FieldTrajectorySequence.sides.UP, false, true)
                         .build();
+        TrajectorySequence toParking = field.createFieldTrajectory(toCone.end())
+                //.toLocation(new Pose2d(toCone.end().getX(), toCone.end().getY(), Math.toRadians(180)), false)
+                .toSignalZone(signalZone.zoneNum)
+                .build();
+//        TrajectorySequence clearPole = drive.trajectorySequenceBuilder(toCone.end())
+//                .turn(Math.toRadians(90))
+//                .build();
 
                 //drive.trajectorySequenceBuilder(startSequence.end())
 //                .setReversed(true)
@@ -134,16 +142,18 @@ public class RightRedLowPole extends LinearOpMode {
 
         //this repeats until there is not enough time left to complete next cycle
         int cycle = 0;
-        while (matchTimer.seconds() < 25 && opModeIsActive() && cycle <= 4) {
+        while (matchTimer.seconds() < 20 && opModeIsActive() && cycle <= 4) {
             sleep(500);
             //TODO: Move arm from stacj to pole and back
+           // drive.followTrajectorySequence(clearPole);
+
             drive.followTrajectorySequence(toStack);
             arm.ArmStackControl(cycle);
            // claw.AutoControl(Claw.clawStatuses.OPEN);
             sleep(1000);
             claw.AutoControl(Claw.clawStatuses.CLOSED);
             sleep(500);
-            arm.setArmPosition(Arm2.armStatuses.LOW, false);
+            arm.setArmPosition(Arm2.armStatuses.AUTO, false);
             sleep(1000);
             drive.followTrajectorySequence(toCone);
             claw.AutoControl(Claw.clawStatuses.OPEN);
@@ -156,6 +166,8 @@ public class RightRedLowPole extends LinearOpMode {
 
         }
 
+        drive.followTrajectorySequence(toParking);
+        arm.setArmPosition(Arm2.armStatuses.PICKUP, false);
         //TODO: lower lift retract arm
 //        switch (signalZone) {
 //            case LEFT:
@@ -167,7 +179,7 @@ public class RightRedLowPole extends LinearOpMode {
 //
 //
 //        }
-        arm.setArmPosition(Arm2.armStatuses.PICKUP, false);
+
 
 
 
