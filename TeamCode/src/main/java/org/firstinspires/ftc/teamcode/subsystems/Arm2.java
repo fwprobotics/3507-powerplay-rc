@@ -71,7 +71,7 @@ public class Arm2 {
 
         arm = hardwareMap.servo.get("armservo"); // Really not important which is which
 
-           //arm.setPosition(armStatus.frontPosition);
+        //arm.setPosition(armStatus.frontPosition); //sets current pos to 0
 
 
     }

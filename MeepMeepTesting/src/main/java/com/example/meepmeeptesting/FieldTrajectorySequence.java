@@ -11,7 +11,7 @@ import com.noahbres.meepmeep.roadrunner.trajectorysequence.TrajectorySequenceBui
 
 public class FieldTrajectorySequence {
     public double border;
-    public static double coneoffset = 15;
+    public static double coneoffset = 8;
     public static int clawlength = 4;
 
     public enum sides {
@@ -101,17 +101,17 @@ public class FieldTrajectorySequence {
                 toLocation( new Pose2d(x, y, lastPose.getHeading()), false);
                 break;
             case REDLEFT:
-                x = ((4-zone)*24)-12;
+                x = -(((4-zone)*24)-12);
                 y = -((getDimension()/2)+border);
                 toLocation(new Pose2d(x, y, lastPose.getHeading()), false);
                 break;
             case BLUERIGHT:
-                x = ((4-zone)*24)-12;
+                x = -((zone*24)-12);
                 y = (getDimension()/2)+border;
                 toLocation(new Pose2d(x, y, lastPose.getHeading()), false);
                 break;
             case BLUELEFT:
-                x = (zone*24)-12;
+                x = (((4-zone)*24)-12);
                 y = (getDimension()/2)+border;
                 toLocation(new Pose2d(x, y, lastPose.getHeading()), false);
                 break;
