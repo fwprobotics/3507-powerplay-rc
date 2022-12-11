@@ -15,9 +15,10 @@ public class FieldTrajectorySequence {
         public static double coneoffset = 8;
         public static int clawlength = 4;
         public static double centeroffset = 0;
-        public static double stackoffset = 13;
+        public static double stackoffset = 12;
         public static double turnoffset = 0;
         public static double parkingoffset = 3;
+        public static double parkingoffsetx = -3;
     }
     public double border;
 
@@ -104,22 +105,22 @@ public class FieldTrajectorySequence {
         double y;
         switch (this.autoZone) {
             case REDRIGHT:
-                x = (zone*24)-12;
+                x = (zone*24)-(12+ FieldTrajContstants.parkingoffsetx);
                 y = -((getDimension()/2)+border+FieldTrajContstants.parkingoffset);
                 toLocation( new Pose2d(x, y, Math.toRadians(180)), false);
                 break;
             case REDLEFT:
-                x = -(((4-zone)*24)-12);
+                x = -(((4-zone)*24)-(12+ FieldTrajContstants.parkingoffsetx));
                 y = -((getDimension()/2)+border+FieldTrajContstants.parkingoffset);
                 toLocation(new Pose2d(x, y, Math.toRadians(0)), false);
                 break;
             case BLUERIGHT:
-                x = -((zone*24)-12);
+                x = -((zone*24)-(12+ FieldTrajContstants.parkingoffsetx));
                 y = (getDimension()/2)+border+FieldTrajContstants.parkingoffset;
                 toLocation(new Pose2d(x, y, Math.toRadians(0)), false);
                 break;
             case BLUELEFT:
-                x = (((4-zone)*24)-12);
+                x = (((4-zone)*24)-(12+ FieldTrajContstants.parkingoffsetx));
                 y = (getDimension()/2)+border+FieldTrajContstants.parkingoffset;
                 toLocation(new Pose2d(x, y, Math.toRadians(180)), false);
                 break;

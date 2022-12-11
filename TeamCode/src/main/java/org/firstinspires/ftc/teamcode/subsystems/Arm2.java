@@ -25,7 +25,7 @@ public class Arm2 {
     public static class ArmConstants {
 
         public static double arm_pickup = 0;
-        public static double arm_low_front = 0.5;
+        public static double arm_low_front = 0.60; //0.5 0.37
         public static double arm_mid_front = 0.68;
         public static double arm_high_front = 0.45;
         public static double arm_high_back = 0.65;
@@ -71,7 +71,7 @@ public class Arm2 {
 
         arm = hardwareMap.servo.get("armservo"); // Really not important which is which
 
-        //arm.setPosition(armStatus.frontPosition); //sets current pos to 0
+        arm.setPosition(armStatus.frontPosition); //sets current pos to 0
 
 
     }
@@ -124,16 +124,16 @@ public class Arm2 {
             armStatus = armStatuses.LOW;
             armPosition = flipToggle ? (armStatus.getFrontPosition()) : armStatus.getBackPosition();
         }
-        if (mid){
-            armStatus = armStatuses.MID;
-            armPosition = flipToggle ? (armStatus.getFrontPosition()) : armStatus.getBackPosition();
-        }
+//        if (mid){
+//            armStatus = armStatuses.MID;
+//            armPosition = flipToggle ? (armStatus.getFrontPosition()) : armStatus.getBackPosition();
+//        }
 //        if (high){
 //            armStatus = armStatuses.HIGH;
 //            armPosition = flipToggle ? (armStatus.getFrontPosition()) : armStatus.getBackPosition();
 //        }
 
-        armPosition += ArmConstants.teleop_speed*manualInput;
+        armPosition -= ArmConstants.teleop_speed*manualInput;
 
 
 

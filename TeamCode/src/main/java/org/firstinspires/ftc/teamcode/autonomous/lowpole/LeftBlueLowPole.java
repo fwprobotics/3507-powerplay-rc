@@ -74,7 +74,8 @@ public class LeftBlueLowPole extends LinearOpMode {
 //
 //                .build();
         TrajectorySequence startSequence = field.createFieldTrajectory(startPose)
-                .toPole(2, 1, FieldTrajectorySequence.sides.DOWN, false, true)
+                .toLocation(new Pose2d(12, 60, Math.toRadians(-90)), true)
+                .toPole(2, 1, FieldTrajectorySequence.sides.DOWN, false, false)
                 .build();
 
 
@@ -135,30 +136,30 @@ public class LeftBlueLowPole extends LinearOpMode {
        // drive.followTrajectorySequence(toStack);
 
         //this repeats until there is not enough time left to complete next cycle
-        int cycle = 0;
-        while (matchTimer.seconds() < 20 && opModeIsActive() && cycle <= 4) {
-            sleep(500);
-            //TODO: Move arm from stacj to pole and back
-           // drive.followTrajectorySequence(clearPole);
-
-            drive.followTrajectorySequence(toStack);
-            arm.ArmStackControl(cycle);
-           // claw.AutoControl(Claw.clawStatuses.OPEN);
-            sleep(1000);
-            claw.AutoControl(Claw.clawStatuses.CLOSED);
-            sleep(500);
-            arm.setArmPosition(Arm2.armStatuses.AUTO, false);
-            sleep(1000);
-            drive.followTrajectorySequence(toCone);
-            claw.AutoControl(Claw.clawStatuses.OPEN);
-//            claw.AutoControl(Claw.clawStatuses.OPEN);
-//            claw.AutoControl(Claw.clawStatuses.CLOSED);
-//            arm.ArmAutoControl(Arm.armStatuses.LOW_BACK);
-//            claw.AutoControl(Claw.clawStatuses.DROP);
+//        int cycle = 0;
+//        while (matchTimer.seconds() < 20 && opModeIsActive() && cycle <= 4) {
+//            sleep(500);
+//            //TODO: Move arm from stacj to pole and back
+//           // drive.followTrajectorySequence(clearPole);
 //
-//            cycle++;
-
-        }
+//            drive.followTrajectorySequence(toStack);
+//            arm.ArmStackControl(cycle);
+//           // claw.AutoControl(Claw.clawStatuses.OPEN);
+//            sleep(1000);
+//            claw.AutoControl(Claw.clawStatuses.CLOSED);
+//            sleep(500);
+//            arm.setArmPosition(Arm2.armStatuses.AUTO, false);
+//            sleep(1000);
+//            drive.followTrajectorySequence(toCone);
+//            claw.AutoControl(Claw.clawStatuses.OPEN);
+////            claw.AutoControl(Claw.clawStatuses.OPEN);
+////            claw.AutoControl(Claw.clawStatuses.CLOSED);
+////            arm.ArmAutoControl(Arm.armStatuses.LOW_BACK);
+////            claw.AutoControl(Claw.clawStatuses.DROP);
+////
+////            cycle++;
+//
+//        }
 
         drive.followTrajectorySequence(toParking);
         arm.setArmPosition(Arm2.armStatuses.PICKUP, false);
