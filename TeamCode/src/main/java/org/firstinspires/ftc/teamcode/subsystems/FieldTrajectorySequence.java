@@ -182,6 +182,7 @@ public class FieldTrajectorySequence {
         return  this;
     }
 
+    //same but takes in a MarkerCallback to lower arm
     public FieldTrajectorySequence toStack(boolean xfirst, MarkerCallback callback) {
         double x = 72-(this.length/2+(FieldTrajContstants.stackoffset)/2);
         double x2 =  72-(this.length/2+(FieldTrajContstants.stackoffset));
@@ -195,12 +196,18 @@ public class FieldTrajectorySequence {
                 break;
             case REDLEFT:
                 toLocation(new Pose2d(-x, -y, Math.toRadians(180-FieldTrajContstants.turnoffset)), xfirst);
+                trajectory.addDisplacementMarker(callback);
+                toLocation(new Pose2d(-x2, -y, Math.toRadians(180+FieldTrajContstants.turnoffset)), true);
                 break;
             case BLUERIGHT:
                 toLocation(new Pose2d(-x, y, Math.toRadians(180-FieldTrajContstants.turnoffset)), xfirst);
+                trajectory.addDisplacementMarker(callback);
+                toLocation(new Pose2d(-x2, y, Math.toRadians(180+FieldTrajContstants.turnoffset)), true);
                 break;
             case BLUELEFT:
                 toLocation(new Pose2d(x, y, Math.toRadians(0+FieldTrajContstants.turnoffset)), xfirst);
+                trajectory.addDisplacementMarker(callback);
+                toLocation(new Pose2d(x2, y, Math.toRadians(0+FieldTrajContstants.turnoffset)), true);
                 break;
         }
         return  this;
