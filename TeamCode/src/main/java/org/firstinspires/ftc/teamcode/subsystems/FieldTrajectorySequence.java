@@ -2,11 +2,14 @@ package org.firstinspires.ftc.teamcode.subsystems;
 
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.roadrunner.geometry.Pose2d;
+import com.acmerobotics.roadrunner.trajectory.MarkerCallback;
 
 
+import org.firstinspires.ftc.robotcore.external.Func;
 import org.firstinspires.ftc.teamcode.trajectorysequence.EmptySequenceException;
 import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequence;
 import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequenceBuilder;
+
 
 /*
 In this year's challenge, there were junctions at every place where four tiles met,
@@ -15,6 +18,10 @@ divided the field into 5 streets up/down and 5 streets left/right that run
 through the middle of the tiles. This program navigates from a starting position to
 many key locations on the field, using these streets if a direct route is not easy.
  */
+
+import java.util.function.Function;
+
+
 
 public class FieldTrajectorySequence {
     @Config
@@ -148,14 +155,43 @@ public class FieldTrajectorySequence {
         return this;
     }
 
+
     // Trajectory sequence for the stack of cones corresponding to a starting position
+
+
+
+
     public FieldTrajectorySequence toStack(boolean xfirst) {
-        double x = 72-(this.length/2+FieldTrajContstants.stackoffset);
+        double x =  72-(this.length/2+(FieldTrajContstants.stackoffset));
         double y = 12;
 
         switch (autoZone) {
             case REDRIGHT:
                 toLocation(new Pose2d(x, -y, Math.toRadians(0+FieldTrajContstants.turnoffset)), xfirst);
+                break;
+            case REDLEFT:
+                toLocation(new Pose2d(-x, -y, Math.toRadians(180-FieldTrajContstants.turnoffset)), xfirst);
+                break;
+            case BLUERIGHT:
+                toLocation(new Pose2d(-x, y, Math.toRadians(180-FieldTrajContstants.turnoffset)), xfirst);
+                break;
+            case BLUELEFT:
+                toLocation(new Pose2d(x, y, Math.toRadians(0+FieldTrajContstants.turnoffset)), xfirst);
+                break;
+        }
+        return  this;
+    }
+
+    public FieldTrajectorySequence toStack(boolean xfirst, MarkerCallback callback) {
+        double x = 72-(this.length/2+(FieldTrajContstants.stackoffset)/2);
+        double x2 =  72-(this.length/2+(FieldTrajContstants.stackoffset));
+        double y = 12;
+
+        switch (autoZone) {
+            case REDRIGHT:
+                toLocation(new Pose2d(x, -y, Math.toRadians(0+FieldTrajContstants.turnoffset)), xfirst);
+                trajectory.addDisplacementMarker(callback);
+                toLocation(new Pose2d(x2, -y, Math.toRadians(0+FieldTrajContstants.turnoffset)), true);
                 break;
             case REDLEFT:
                 toLocation(new Pose2d(-x, -y, Math.toRadians(180-FieldTrajContstants.turnoffset)), xfirst);

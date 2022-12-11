@@ -13,6 +13,7 @@ public class FieldTrajectorySequence {
     public double border;
     public static double coneoffset = 8;
     public static int clawlength = 4;
+    public double stackoffset = 12;
 
     public enum sides {
         UP,
@@ -121,12 +122,14 @@ public class FieldTrajectorySequence {
     }
 
     public FieldTrajectorySequence toStack(boolean xfirst) {
-        double x = 72-(this.length/2+18.5);
+        double x = 72-(this.length/2+stackoffset*3/2);
+        double x2 =  72-(this.length/2+(stackoffset));
         double y = 12;
 
         switch (autoZone) {
             case REDRIGHT:
                 toLocation(new Pose2d(x, -y, Math.toRadians(0)), xfirst);
+                toLocation(new Pose2d(x2, -y, Math.toRadians(0)), true);
                 break;
             case REDLEFT:
                 toLocation(new Pose2d(-x, -y, Math.toRadians(180)), xfirst);
@@ -140,6 +143,7 @@ public class FieldTrajectorySequence {
         }
         return  this;
     }
+
 
     public TrajectorySequence build() {
         return trajectory.build();
