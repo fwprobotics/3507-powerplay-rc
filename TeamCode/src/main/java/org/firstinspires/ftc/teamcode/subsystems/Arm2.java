@@ -81,15 +81,15 @@ public class Arm2 {
     // Use this as auto function
     public void setArmPosition(armStatuses status, boolean Flip) {
         if (Flip){
-            moveArm(status.getBackPosition());
+            armPosition = status.getBackPosition();
         } else {
-            moveArm(status.getFrontPosition());
+            armPosition = status.getFrontPosition();
         }
     }
 
+
     public void ArmStackControl (int cycle) {
-        double position = ArmConstants.stack_top - (cycle* ArmConstants.stack_difference);
-        moveArm(position);
+        armPosition = ArmConstants.stack_top - (cycle* ArmConstants.stack_difference);
     }
 
     public void moveArm(double pos){
@@ -111,24 +111,6 @@ public class Arm2 {
     }
 
 
-    public void moveArm(double pos, SampleMecanumDrive drive){
-        double currentPos = arm.getPosition();
-        while (currentPos <= pos-ArmConstants.tolerance || currentPos >= pos+ArmConstants.tolerance) {
-            if (currentPos < pos){
-                arm.setPosition(currentPos + ArmConstants.auto_speed_fast);
-            } else if (currentPos > pos){
-                arm.setPosition(currentPos - ArmConstants.auto_speed_fast);
-            } else {
-                break;
-            }
-
-            currentPos = arm.getPosition();
-            drive.update();
-            realTelemetry.addData("armPos", currentPos);
-        }
-
-
-    }
 
 
     // Control Functions
@@ -154,7 +136,7 @@ public class Arm2 {
 
         armPosition -= ArmConstants.teleop_speed*manualInput;
 
-
+        update();
 
 
         //TODO: Add manual control
@@ -164,7 +146,7 @@ public class Arm2 {
 
     }
 
-    public void moveArmTeleop() {
+    public void update() {
         double currentPos = arm.getPosition();
         if (currentPos <= armPosition-ArmConstants.tolerance || currentPos >= armPosition+ArmConstants.tolerance) {
             if (currentPos < armPosition) {

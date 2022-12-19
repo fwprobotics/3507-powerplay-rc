@@ -8,6 +8,7 @@ import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
 import org.firstinspires.ftc.teamcode.subsystems.Arm2;
 import org.firstinspires.ftc.teamcode.subsystems.Drivetrain;
 import org.firstinspires.ftc.teamcode.subsystems.Lift;
+import org.firstinspires.ftc.teamcode.subsystems.Lift2;
 import org.firstinspires.ftc.teamcode.subsystems.ToggleButton;
 import org.firstinspires.ftc.teamcode.subsystems.Arm;
 import org.firstinspires.ftc.teamcode.subsystems.Claw;
@@ -18,7 +19,7 @@ public class Teleop extends LinearOpMode {
 
     SampleMecanumDrive drive;
     Drivetrain drivetrain;
-    Lift lift;
+    Lift2 lift;
     ToggleButton high;
     ToggleButton mid;
     ToggleButton low;
@@ -35,7 +36,7 @@ public class Teleop extends LinearOpMode {
     public void runOpMode() {
         drive = new SampleMecanumDrive(hardwareMap);
         drivetrain = new Drivetrain(this, hardwareMap, telemetry, drive);
-        lift = new Lift(Lift.liftRunMode.TELEOP, this, hardwareMap, telemetry);
+        lift = new Lift2(hardwareMap, telemetry);
         high = new ToggleButton(false);
         mid = new ToggleButton(false);
         low = new ToggleButton(false);
@@ -64,11 +65,10 @@ public class Teleop extends LinearOpMode {
                 flip.toggle(gamepad2.x);
               //  clawToggle.toggle(gamepad2.right_bumper);
                 claw.TeleopControl(gamepad2.a, gamepad2.y, gamepad2.b);
-              //  lift.teleOpControl(gamepad2.right_stick_y, high.newPress(), low.newPress(), pickup.newPress(), mid.newPress());
+                lift.teleOpControl(gamepad2);
               //  arm.ManualControl(gamepad2.left_stick_y);
          //       if (high.newPress() || mid.newPress() || low.newPress() || pickup.newPress() || flip.newPress()) {
                     arm.TeleopControl(pickup.newPress(), low.newPress(), mid.newPress(), high.newPress(), true, gamepad2.left_stick_y);
-                    arm.moveArmTeleop();
           //      }
                 telemetry.update();
 
