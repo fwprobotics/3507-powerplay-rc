@@ -8,6 +8,7 @@ import com.qualcomm.robotcore.hardware.DigitalChannel;
 
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
+import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
 
 /*
 Class for controlling robot's virtual 4-bar. Includes
@@ -25,16 +26,17 @@ public class Arm2 {
     public static class ArmConstants {
 
         public static double arm_pickup = 0;
-        public static double arm_low_front = 0.60; //0.5 0.37
+        public static double arm_low_front = 0.54; //0.5 0.37
         public static double arm_mid_front = 0.68;
         public static double arm_high_front = 0.45;
         public static double arm_high_back = 0.65;
         public static double arm_mid_back = 0.75;
         public static double arm_low_back = 0.75;
-        public static  double arm_auto_dropoff = 0.53;
-        public static double stack_top = 0.28;
+        public static  double arm_auto_dropoff = 0.52;
+        public static double stack_top = 0.25;
         public static double stack_difference = 0.04;
-        public static double arm_speed = 0.0005;
+        public static double auto_speed_slow = 0.0005;
+        public static double auto_speed_fast = 0.005;
         public static double tolerance = 0.01;
         public static double teleop_speed = 0.002;
 
@@ -94,22 +96,39 @@ public class Arm2 {
         double currentPos = arm.getPosition();
         while (currentPos <= pos-ArmConstants.tolerance || currentPos >= pos+ArmConstants.tolerance) {
             if (currentPos < pos){
-                arm.setPosition(currentPos + ArmConstants.arm_speed);
+                arm.setPosition(currentPos + ArmConstants.auto_speed_slow);
             } else if (currentPos > pos){
-                arm.setPosition(currentPos - ArmConstants.arm_speed);
+                arm.setPosition(currentPos - ArmConstants.auto_speed_slow);
             } else {
                 break;
             }
 
             currentPos = arm.getPosition();
             realTelemetry.addData("armPos", currentPos);
-            realTelemetry.update();
         }
 
 
     }
 
 
+    public void moveArm(double pos, SampleMecanumDrive drive){
+        double currentPos = arm.getPosition();
+        while (currentPos <= pos-ArmConstants.tolerance || currentPos >= pos+ArmConstants.tolerance) {
+            if (currentPos < pos){
+                arm.setPosition(currentPos + ArmConstants.auto_speed_fast);
+            } else if (currentPos > pos){
+                arm.setPosition(currentPos - ArmConstants.auto_speed_fast);
+            } else {
+                break;
+            }
+
+            currentPos = arm.getPosition();
+            drive.update();
+            realTelemetry.addData("armPos", currentPos);
+        }
+
+
+    }
 
 
     // Control Functions

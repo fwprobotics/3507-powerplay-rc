@@ -29,7 +29,7 @@ public class FieldTrajectorySequence {
         public static double coneoffset = 8;
         public static int clawlength = 4;
         public static double centeroffset = 0;
-        public static double stackoffset = 12;
+        public static double stackoffset = 10;
         public static double turnoffset = 0;
         public static double parkingoffset = 3;
         public static double parkingoffsetx = -3;
@@ -182,36 +182,18 @@ public class FieldTrajectorySequence {
         return  this;
     }
 
-    //same but takes in a MarkerCallback to lower arm
-    public FieldTrajectorySequence toStack(boolean xfirst, MarkerCallback callback) {
-        double x = 72-(this.length/2+(FieldTrajContstants.stackoffset)/2);
-        double x2 =  72-(this.length/2+(FieldTrajContstants.stackoffset));
-        double y = 12;
-
-        switch (autoZone) {
-            case REDRIGHT:
-                toLocation(new Pose2d(x, -y, Math.toRadians(0+FieldTrajContstants.turnoffset)), xfirst);
-                trajectory.addDisplacementMarker(callback);
-                toLocation(new Pose2d(x2, -y, Math.toRadians(0+FieldTrajContstants.turnoffset)), true);
-                break;
-            case REDLEFT:
-                toLocation(new Pose2d(-x, -y, Math.toRadians(180-FieldTrajContstants.turnoffset)), xfirst);
-                trajectory.addDisplacementMarker(callback);
-                toLocation(new Pose2d(-x2, -y, Math.toRadians(180+FieldTrajContstants.turnoffset)), true);
-                break;
-            case BLUERIGHT:
-                toLocation(new Pose2d(-x, y, Math.toRadians(180-FieldTrajContstants.turnoffset)), xfirst);
-                trajectory.addDisplacementMarker(callback);
-                toLocation(new Pose2d(-x2, y, Math.toRadians(180+FieldTrajContstants.turnoffset)), true);
-                break;
-            case BLUELEFT:
-                toLocation(new Pose2d(x, y, Math.toRadians(0+FieldTrajContstants.turnoffset)), xfirst);
-                trajectory.addDisplacementMarker(callback);
-                toLocation(new Pose2d(x2, y, Math.toRadians(0+FieldTrajContstants.turnoffset)), true);
-                break;
+    public FieldTrajectorySequence addMarker(MarkerCallback callback, double delay) {
+        double currentDuration;
+        try {
+            currentDuration = trajectory.build().duration();
+        } catch (EmptySequenceException e) {
+            currentDuration = 0;
         }
-        return  this;
+        trajectory.addTemporalMarker(delay, callback);
+        return this;
     }
+
+
 
     public TrajectorySequence build() {
         return trajectory.build();

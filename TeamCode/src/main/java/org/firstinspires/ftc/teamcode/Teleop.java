@@ -42,7 +42,7 @@ public class Teleop extends LinearOpMode {
         pickup = new ToggleButton(false);
         flip = new ToggleButton(false);
         clawToggle = new ToggleButton(false);
-        claw = new Claw(hardwareMap);
+        claw = new Claw(hardwareMap, telemetry);
         arm = new Arm2(this, hardwareMap, telemetry);
         telemetry.addLine("Ready and WAITING :)");
         telemetry.update();

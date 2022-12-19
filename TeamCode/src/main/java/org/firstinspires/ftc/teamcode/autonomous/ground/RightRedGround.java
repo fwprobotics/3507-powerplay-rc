@@ -39,7 +39,7 @@ public class RightRedGround extends LinearOpMode {
 
         SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
      //   Lift lift = new Lift(Lift.liftRunMode.AUTONOMOUS, this, hardwareMap, telemetry);
-        Claw claw = new Claw(hardwareMap);
+        Claw claw = new Claw(hardwareMap, telemetry);
         Pose2d startPose = new Pose2d(32, -66, Math.toRadians(90));
         drive.setPoseEstimate(startPose);
         ElapsedTime matchTimer = new ElapsedTime();

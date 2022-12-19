@@ -50,7 +50,7 @@ public class RightRedLowPole extends LinearOpMode {
         SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
      //   Lift lift = new Lift(Lift.liftRunMode.AUTONOMOUS, this, hardwareMap, telemetry);
         Arm2 arm = new Arm2(this, hardwareMap, telemetry);
-        Claw claw = new Claw(hardwareMap);
+        Claw claw = new Claw(hardwareMap, telemetry);
         Pose2d startPose = new Pose2d(32, -66, Math.toRadians(90));
         Field field = new Field(drive, 15, 16.5, Field.autoZones.REDRIGHT);
         drive.setPoseEstimate(startPose);
@@ -147,11 +147,17 @@ public class RightRedLowPole extends LinearOpMode {
             sleep(500);
             //TODO: Move arm from stacj to pole and back
            // drive.followTrajectorySequence(clearPole);
-            toStack = field.createFieldTrajectory(toCone.end())
-                            .toStack(false, () -> {
-                                arm.ArmStackControl(cycle);
-                            }).build();
+//            toStack = field.createFieldTrajectory(toCone.end())
+//                    .addMarker( () -> {
+//                        arm.ArmStackControl(cycle, drive);
+//                    }, 0.25)
+//                            .toStack(false).build();
+            new Thread(() -> {
+                sleep(500);
+                arm.ArmStackControl(cycle);
+            }).start();
             drive.followTrajectorySequence(toStack);
+
 
            // claw.AutoControl(Claw.clawStatuses.OPEN);
             sleep(1000);

@@ -44,7 +44,7 @@ public class LeftRedLowPole extends LinearOpMode {
         SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
      //   Lift lift = new Lift(Lift.liftRunMode.AUTONOMOUS, this, hardwareMap, telemetry);
         Arm2 arm = new Arm2(this, hardwareMap, telemetry);
-        Claw claw = new Claw(hardwareMap);
+        Claw claw = new Claw(hardwareMap, telemetry);
         Pose2d startPose = new Pose2d(-32, -66, Math.toRadians(90));
         Field field = new Field(drive, 15, 16.5, Field.autoZones.REDLEFT);
         drive.setPoseEstimate(startPose);
