@@ -123,6 +123,7 @@ public class Lift2 {
             double time = clock.seconds() - profileStartTime;
             MotionState state = profile.get(time);
             controller.setTargetPosition(state.getX());
+            controller.setTargetAcceleration(state.getA());
             power = controller.update(currentHeight, state.getV());
         } else {
             // just hold the position
@@ -155,6 +156,10 @@ public class Lift2 {
                 setPower(-gamepad2.right_stick_y*power_modifier);
             }
         }
+    }
+
+    public void setAutoPosition(liftLevels level) {
+        setHeight(level.height);
     }
 
 }
