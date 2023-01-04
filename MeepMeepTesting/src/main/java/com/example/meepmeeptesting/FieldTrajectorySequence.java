@@ -2,6 +2,7 @@ package com.example.meepmeeptesting;
 
 import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.acmerobotics.roadrunner.trajectory.MarkerCallback;
+import com.acmerobotics.roadrunner.trajectory.Trajectory;
 import com.acmerobotics.roadrunner.trajectory.TrajectoryBuilder;
 import com.acmerobotics.roadrunner.trajectory.constraints.TrajectoryAccelerationConstraint;
 import com.acmerobotics.roadrunner.trajectory.constraints.TrajectoryVelocityConstraint;
@@ -329,6 +330,33 @@ public class FieldTrajectorySequence {
 //        } else {
 //            return true;
 //        }
+    }
+//more accurate than others but also breaks auto
+    public boolean doesIntersects(Pose2d start, Pose2d end, boolean x) {
+        double xShift = (end.getX()-start.getX());
+        double yShift = (end.getY()-start.getY());
+        xShift /= 100;
+        yShift /= 100;
+        double currX = start.getX();
+        double currY = start.getY();
+        boolean stillOnPath  = true;
+        boolean intersects = false;
+        double max = Math.sqrt(Math.pow(width, 2) + Math.pow(length, 2))/2;
+        while (stillOnPath) {
+            intersects = doesIntersects(new Pose2d(currX, currY, 90), x);
+            if (intersects) {
+                break;
+            }
+            currX += xShift;
+            currY += yShift;
+            if ((currX >= end.getX())) {
+                stillOnPath = false;
+            }
+
+
+
+        }
+        return intersects;
     }
 
 
