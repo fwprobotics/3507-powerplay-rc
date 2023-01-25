@@ -94,7 +94,7 @@ public class LowPoleFSM extends LinearOpMode {
 
 
         TrajectorySequence toStack = field.createFieldTrajectory(startSequence.end()) //new Pose2d(clearPoseEnd.getX(), clearPoseEnd.getY(), Math.toRadians(0))
-                .toStack(false)
+                .toStack(false, 1)
 
                 .build();
 
@@ -131,7 +131,7 @@ public class LowPoleFSM extends LinearOpMode {
                         cycle++;
                         int finalCycle = cycle;
                         toStack = field.createFieldTrajectory(startSequence.end()) //new Pose2d(clearPoseEnd.getX(), clearPoseEnd.getY(), Math.toRadians(0))
-                                .toStack(false)
+                                .toStack(false, 1)
                                 .addMarker(() -> {
                                     arm.ArmStackControl(finalCycle);
                                 }, 500)

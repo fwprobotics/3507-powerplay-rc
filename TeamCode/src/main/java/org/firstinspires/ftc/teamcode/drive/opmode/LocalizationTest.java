@@ -19,6 +19,7 @@ public class LocalizationTest extends LinearOpMode {
     @Override
     public void runOpMode() throws InterruptedException {
         SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
+ //       drive.setPoseEstimate(new Pose2d(66, 66, Math.toRadians(180)));
 
         drive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
@@ -27,9 +28,9 @@ public class LocalizationTest extends LinearOpMode {
         while (!isStopRequested()) {
             drive.setWeightedDrivePower(
                     new Pose2d(
-                            -gamepad1.left_stick_y,
-                            -gamepad1.left_stick_x,
-                            -gamepad1.right_stick_x
+                            -gamepad1.left_stick_y*0.5,
+                            -gamepad1.left_stick_x*0.5,
+                            -gamepad1.right_stick_x*0.5
                     )
             );
 

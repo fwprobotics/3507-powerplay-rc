@@ -23,8 +23,8 @@ public class Lift2 {
     public enum liftLevels {
         FLOOR (0),
         LOW (0),
-        MED (20),
-        HIGH (30);
+        MED (9),
+        HIGH (19);
         int height;
         liftLevels(int height) {
             this.height = height;
@@ -36,18 +36,18 @@ public class Lift2 {
     public static double GEAR_RATIO = 1; // output (spool) speed / input (motor) speed
 
     // the operating range of the elevator is restricted to [0, MAX_HEIGHT]
-    public static double MAX_HEIGHT = 30; // in
+    public static double MAX_HEIGHT = 24; // in
 
-    public static PIDCoefficients PID = new PIDCoefficients(0, 0, 0);
+    public static PIDCoefficients PID = new PIDCoefficients(3.5, 0, 0);
 
-    public static double MAX_VEL = 10; // in/s
-    public static double MAX_ACCEL = 10; // in/s^2
-    public static double MAX_JERK = 20; // in/s^3
-    public static double kV = 0;
+    public static double MAX_VEL = 25; // in/s
+    public static double MAX_ACCEL = 30; // in/s^2
+    public static double MAX_JERK = 22; // in/s^3
+    public static double kV = 1 / rpmToVelocity(getMaxRpm());
     public static double kA = 0;
     public static double kStatic = 0;
 
-    public static double power_modifier = 0;
+    public static double power_modifier = 0.4;
 
 
     public DcMotor leftLiftMotor;
@@ -78,6 +78,8 @@ public class Lift2 {
         rightLiftMotor = hardwareMap.dcMotor.get("rightLiftMotor");
         leftLiftMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         rightLiftMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        leftLiftMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        rightLiftMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         // if necessary, reverse the motor so "up" is positive
         // motor.setDirection(DcMotorSimple.Direction.REVERSE);
 
@@ -130,10 +132,13 @@ public class Lift2 {
             controller.setTargetPosition(desiredHeight);
             power = controller.update(currentHeight);
         }
+        telemetry.addData("currentHeight", currentHeight);
+        telemetry.update();
         setPower(power);
     }
 
     public void setPower(double power) {
+        this.telemetry.addData("power", power);
         leftLiftMotor.setPower(power);
         rightLiftMotor.setPower(power);
     }
@@ -152,10 +157,10 @@ public class Lift2 {
         if (isBusy()) {
             update();
         } else {
-            if (gamepad2.right_stick_y != 0) {
                 setPower(-gamepad2.right_stick_y*power_modifier);
             }
-        }
+        telemetry.addData("currentHeight", getCurrentHeight());
+
     }
 
     public void setAutoPosition(liftLevels level) {

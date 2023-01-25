@@ -79,9 +79,9 @@ public class LeftRedLowPole extends LinearOpMode {
                 .build();
 
 
-        Pose2d clearPoseEnd = field.createFieldTrajectory(startPose).getTargetPole(2, -1, FieldTrajectorySequence.sides.UP, false);
+        Pose2d clearPoseEnd = field.createFieldTrajectory(startPose).getTargetPole(2, -1, FieldTrajectorySequence.sides.UP.heading, false);
         TrajectorySequence toStack = field.createFieldTrajectory(startSequence.end()) //new Pose2d(clearPoseEnd.getX(), clearPoseEnd.getY(), Math.toRadians(0))
-                .toStack(false)
+                .toStack(false, 1)
 
                 .build();
 

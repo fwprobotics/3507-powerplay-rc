@@ -3,6 +3,8 @@ package org.firstinspires.ftc.teamcode.subsystems;
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.acmerobotics.roadrunner.trajectory.MarkerCallback;
+import com.acmerobotics.roadrunner.trajectory.constraints.TrajectoryAccelerationConstraint;
+import com.acmerobotics.roadrunner.trajectory.constraints.TrajectoryVelocityConstraint;
 
 
 import org.firstinspires.ftc.robotcore.external.Func;
@@ -38,10 +40,16 @@ public class FieldTrajectorySequence {
 
 
     public enum sides {
-        UP,
-        LEFT,
-        RIGHT,
-        DOWN;
+        UP (-90),
+        LEFT (0),
+        RIGHT (180),
+        DOWN (90);
+        public double heading;
+        sides (double heading) {
+            this.heading = heading;
+        }
+
+        public double heading() { return this.heading; }
     }
 
 
@@ -65,6 +73,7 @@ public class FieldTrajectorySequence {
 
 
     // Uses the map to make a trajectory sequence
+    //TODO: add optional speed controls.
     public FieldTrajectorySequence toLocation(Pose2d toPose, boolean xfirst) {
         Pose2d startPose;
         // Get starting position
@@ -120,27 +129,55 @@ public class FieldTrajectorySequence {
 
     }
 
+//
+
+    public FieldTrajectorySequence setVelConstraint(TrajectoryVelocityConstraint velConstraint) {
+        trajectory.setVelConstraint(velConstraint);
+        return this;
+    }
+    public FieldTrajectorySequence setAccelConstraint(TrajectoryAccelerationConstraint accelConstraint){
+        trajectory.setAccelConstraint(accelConstraint);
+        return this;
+    }
+
     public FieldTrajectorySequence toPole(int poleX, int poleY, sides side, boolean backwardsDrop, boolean xfirst) {
-        Pose2d targetPole = getTargetPole(poleX, poleY, side, backwardsDrop);
+        Pose2d targetPole = getTargetPole(poleX, poleY, side.heading(), backwardsDrop);
         return toLocation(targetPole, xfirst);
     }
 
+    public FieldTrajectorySequence toPole(int poleX, int poleY, double heading, boolean backwardsDrop, boolean xfirst) {
+        Pose2d targetPole = getTargetPole(poleX, poleY, heading, backwardsDrop);
+        return toLocation(targetPole, xfirst);
+    }
+    public FieldTrajectorySequence toPole(int poleX, int poleY, boolean backwardsDrop, boolean xfirst) {
+        Pose2d targetPole = getTargetPole(poleX, poleY, backwardsDrop);
+        return toLocation(targetPole, xfirst);
+    }
+    public FieldTrajectorySequence toPole(boolean backwardsDrop, boolean xfirst) {
+        double [] poleCoords = getNearestPole();
+        int poleX = (int)poleCoords[0];
+        int poleY = (int)poleCoords[1];
+        Pose2d targetPole = getTargetPole(poleX, poleY, backwardsDrop);
+        return toLocation(targetPole, xfirst);
+    }
     // Generates a trajectory sequence to a zone based on our detection.
     public FieldTrajectorySequence toSignalZone(int zone) {
         double x;
         double y;
         switch (this.autoZone) {
             case REDRIGHT:
-                x = (zone*24)-(12+ FieldTrajContstants.parkingoffsetx);
+                x = (zone*24)-(12+FieldTrajContstants.parkingoffsetx);
                 y = -((getDimension()/2)+border+FieldTrajContstants.parkingoffset);
                 toLocation( new Pose2d(x, y, Math.toRadians(180)), false);
                 break;
             case REDLEFT:
-                x = -(((4-zone)*24)-(12+ FieldTrajContstants.parkingoffsetx));                y = -((getDimension()/2)+border+FieldTrajContstants.parkingoffset);
+                x = -(((4-zone)*24)-(12+ FieldTrajContstants.parkingoffsetx));
+                y = -((getDimension()/2)+border+FieldTrajContstants.parkingoffset);
                 toLocation(new Pose2d(x, y, Math.toRadians(0)), false);
                 break;
             case BLUERIGHT:
-                x = -((zone*24)-(12+ FieldTrajContstants.parkingoffsetx));                y = (getDimension()/2)+border+FieldTrajContstants.parkingoffset;
+                x = -((zone*24)-(12+ FieldTrajContstants.parkingoffsetx));
+                y = (getDimension()/2)+border+FieldTrajContstants.parkingoffset;
                 toLocation(new Pose2d(x, y, Math.toRadians(0)), false);
                 break;
             case BLUELEFT:
@@ -159,8 +196,8 @@ public class FieldTrajectorySequence {
 
 
 
-    public FieldTrajectorySequence toStack(boolean xfirst) {
-        double x =  72-(this.length/2+(FieldTrajContstants.stackoffset));
+    public FieldTrajectorySequence toStack(boolean xfirst, int cycle) {
+        double x =  72-(getDistance(Arm2.ArmConstants.stack_top-(Arm2.ArmConstants.stack_difference*cycle), false)+2);
         double y = 12;
 
         switch (autoZone) {
@@ -191,7 +228,10 @@ public class FieldTrajectorySequence {
         return this;
     }
 
-
+    public FieldTrajectorySequence wait(double seconds) {
+        trajectory.waitSeconds(seconds);
+        return this;
+    }
 
     public TrajectorySequence build() {
         return trajectory.build();
@@ -272,6 +312,33 @@ public class FieldTrajectorySequence {
 //            return true;
 //        }
     }
+    //more accurate than others but also breaks auto
+    public boolean doesIntersects(Pose2d start, Pose2d end, boolean x) {
+        double xShift = (end.getX()-start.getX());
+        double yShift = (end.getY()-start.getY());
+        xShift /= 100;
+        yShift /= 100;
+        double currX = start.getX();
+        double currY = start.getY();
+        boolean stillOnPath  = true;
+        boolean intersects = false;
+        double max = Math.sqrt(Math.pow(width, 2) + Math.pow(length, 2))/2;
+        while (stillOnPath) {
+            intersects = doesIntersects(new Pose2d(currX, currY, 90), x);
+            if (intersects) {
+                break;
+            }
+            currX += xShift;
+            currY += yShift;
+            if ((currX >= end.getX())) {
+                stillOnPath = false;
+            }
+
+
+
+        }
+        return intersects;
+    }
 
 
 
@@ -342,39 +409,121 @@ public class FieldTrajectorySequence {
         }
     }
 
+    public double[] getNearestPole() {
+        double rX = clamp(Math.round(lastPose.getX()/24), -2, 2);
+        double rY = clamp(Math.round(lastPose.getY()/24), -2, 2);
+        return new double[] {rX, rY};
+
+
+
+    }
+    public static double clamp(double val, double min, double max) {
+        return Math.max(min, Math.min(max, val));
+    }
+
+    public double getDistanceFromPole(int poleX, int poleY,  boolean backwardsDrop) {
+        Arm2.armStatuses[][] fieldMap = {{Arm2.armStatuses.PICKUP, Arm2.armStatuses.LOW, Arm2.armStatuses.PICKUP, Arm2.armStatuses.LOW, Arm2.armStatuses.PICKUP},
+                {Arm2.armStatuses.LOW, Arm2.armStatuses.MID, Arm2.armStatuses.HIGH, Arm2.armStatuses.MID, Arm2.armStatuses.LOW},
+                {Arm2.armStatuses.PICKUP, Arm2.armStatuses.HIGH, Arm2.armStatuses.PICKUP, Arm2.armStatuses.HIGH, Arm2.armStatuses.PICKUP},
+                {Arm2.armStatuses.LOW, Arm2.armStatuses.MID, Arm2.armStatuses.HIGH, Arm2.armStatuses.MID, Arm2.armStatuses.LOW},
+                {Arm2.armStatuses.PICKUP, Arm2.armStatuses.LOW, Arm2.armStatuses.PICKUP, Arm2.armStatuses.LOW, Arm2.armStatuses.PICKUP},
+        };
+        Arm2.armStatuses status = fieldMap[poleY+2][poleX+2];
+        double pos = backwardsDrop ? status.getBackPosition() : status.getFrontPosition();
+        return getDistance(pos, backwardsDrop);
+    }
+
+    public double getDistance(double servoPos, boolean backwardsDrop) {
+        if (backwardsDrop) {
+            return (Math.abs(Math.cos(Math.toRadians(servoPos * 235 - 69)) * 291) - 26 - 43) / 25.4;
+        } else {
+            return (Math.abs(Math.cos(Math.toRadians(servoPos * 235 - 69)) * 291) + 26 + 43) / 25.4;
+        }
+    }
+
+    public double[] getOffsetFromDegrees(double distance, double degrees) {
+        double x = Math.cos(Math.toRadians(degrees)) * distance;
+        double y = Math.sin(Math.toRadians(degrees)) * distance;
+        return new double[] {x, y};
+    }
+
+    //    public double getNearestDropPoint(int poleX, int poleY) {
+//        return Math.toDegrees(Math.atan((lastPose.getY()-poleY)/(lastPose.getX()-poleX)));
+//    }
+    public double[] getNearestDropPoint(int cx, int cy, double r) {
+        // Calculate the length of the line segment from the center of the circle to the given point
+        double px = lastPose.getX();
+        double py = lastPose.getY();
+        double len = Math.sqrt((px - cx) * (px - cx) + (py - cy) * (py - cy));
+        // Calculate the coordinates of the point on the circle that is closest to the given point
+        double x = cx + r * (px - cx) / len;
+        double y = cy + r * (py - cy) / len;
+        return new double[]{x, y};
+    }
+
+
     // Uses a coordinate system to find the robot's position at a junction (corner) from some particular angle. Coordinates (-2,-2) through (2,2)
-    public Pose2d getTargetPole(int poleX, int poleY, sides side, boolean backwardsDrop) {
+//    public Pose2d getTargetPole(int poleX, int poleY, sides side, boolean backwardsDrop) {
+//        double poleoffset = getDistanceFromPole(poleX, poleY, backwardsDrop);
+//        poleX *= 24;
+//        poleY *= 24;
+//
+//        int heading = 0;
+//        switch (side) {
+//            case LEFT:
+//                poleX -= poleoffset;
+//                poleY += centeroffset;
+//                heading = 0;
+//                if (backwardsDrop) heading = 180;
+//                break;
+//            case RIGHT:
+//                poleX += poleoffset;
+//                poleY += centeroffset;
+//                heading = 180;
+//                if (backwardsDrop) heading = 0;
+//                break;
+//            case UP:
+//                poleY += poleoffset;
+//                poleX += centeroffset;
+//                heading = -90;
+//                if (backwardsDrop) heading = 90;
+//                break;
+//            case DOWN:
+//                poleY -= poleoffset;
+//                poleX += centeroffset;
+//                heading = 90;
+//                if (backwardsDrop) heading = -90;
+//                break;
+//
+//        }
+//        return new Pose2d(poleX, poleY, Math.toRadians(heading));
+//    }
+
+    public Pose2d getTargetPole(int poleX, int poleY, double heading, boolean backwardsDrop) {
+        double poleoffset = getDistanceFromPole(poleX, poleY, backwardsDrop);
         poleX *= 24;
         poleY *= 24;
+        double[] offset = getOffsetFromDegrees(poleoffset, heading);
 
-        int heading = 0;
-        switch (side) {
-            case LEFT:
-                poleX -= this.length/2+FieldTrajContstants.coneoffset;
-                poleY += FieldTrajContstants.centeroffset;
-                heading = 0;
-                if (backwardsDrop) heading = 180;
-                break;
-            case RIGHT:
-                poleX += this.length/2+FieldTrajContstants.coneoffset;
-                poleY += FieldTrajContstants.centeroffset;
-                heading = 180;
-                if (backwardsDrop) heading = 0;
-                break;
-            case UP:
-                poleY += this.length/2+FieldTrajContstants.coneoffset;
-                poleX += FieldTrajContstants.centeroffset;
-                heading = -90;
-                if (backwardsDrop) heading = 90;
-                break;
-            case DOWN:
-                poleY -= this.length/2+FieldTrajContstants.coneoffset;
-                poleX += FieldTrajContstants.centeroffset;
-                heading = 90;
-                if (backwardsDrop) heading = -90;
-                break;
+        poleX -= offset[0];
+        poleY -= offset[1];
+        if (backwardsDrop) heading = 180+heading;
+        return new Pose2d(poleX, poleY, Math.toRadians(heading));
+    }
+    public Pose2d getTargetPole(int poleX, int poleY, boolean backwardsDrop) {
 
-        }
+        double poleoffset = getDistanceFromPole(poleX, poleY, backwardsDrop);
+        poleX *= 24;
+        poleY *= 24;
+        double[] offset = getNearestDropPoint(poleX, poleY, poleoffset);
+        // double heading = 0;
+        double heading = Math.toDegrees(Math.atan2(offset[1] - lastPose.getY(), offset[0] - lastPose.getX()));
+        double distanceToPole = Math.sqrt(Math.pow(poleY-lastPose.getY(), 2)+ Math.pow(poleX-lastPose.getX(), 2));
+        if (distanceToPole < poleoffset) heading += 180;
+        //double[] offset = getOffsetFromDegrees(poleoffset, heading);
+        if (backwardsDrop) heading = 180+heading;
+        poleX = (int)offset[0];
+        poleY = (int)offset[1];
         return new Pose2d(poleX, poleY, Math.toRadians(heading));
     }
 

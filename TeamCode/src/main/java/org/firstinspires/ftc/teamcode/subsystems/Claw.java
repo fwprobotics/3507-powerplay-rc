@@ -33,8 +33,8 @@ public class Claw {
 
     public Claw(HardwareMap hardwareMap, Telemetry telemetry){
         ClawServo = hardwareMap.servo.get("clawServo");
-        coneDetector = hardwareMap.get(DigitalChannel.class, "coneTouch");
-        coneDetector.setMode(DigitalChannel.Mode.INPUT);
+      //  coneDetector = hardwareMap.get(DigitalChannel.class, "coneTouch");
+       // coneDetector.setMode(DigitalChannel.Mode.INPUT);
         realTelemetry = telemetry;
         status = clawStatuses.OPEN;
     }
@@ -52,7 +52,7 @@ public class Claw {
         }
 
         ClawServo.setPosition(status.position());
-        realTelemetry.addData("coneInClaw", coneDetector.getState());
+       // realTelemetry.addData("coneInClaw", coneDetector.getState());
     }
 
     public void AutoControl(clawStatuses input) {

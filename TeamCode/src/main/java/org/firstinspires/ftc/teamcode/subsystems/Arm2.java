@@ -25,15 +25,15 @@ public class Arm2 {
     @Config
     public static class ArmConstants {
 
-        public static double arm_pickup = 0;
-        public static double arm_low_front = 0.54; //0.5 0.37
-        public static double arm_mid_front = 0.68;
-        public static double arm_high_front = 0.45;
-        public static double arm_high_back = 0.65;
-        public static double arm_mid_back = 0.75;
-        public static double arm_low_back = 0.75;
-        public static  double arm_auto_dropoff = 0.52;
-        public static double stack_top = 0.25;
+        public static double arm_pickup = 0.01;
+        public static double arm_low_front = 0.5; //0.5 0.37
+        public static double arm_mid_front = 0.55;
+        public static double arm_high_front = 0.55;
+        public static double arm_high_back = 1;
+        public static double arm_mid_back = 1;
+        public static double arm_low_back = 1;
+        public static  double arm_auto_dropoff = 0.5;
+        public static double stack_top = 0.4;
         public static double stack_difference = 0.04;
         public static double auto_speed_slow = 0.0005;
         public static double auto_speed_fast = 0.005;
@@ -85,11 +85,13 @@ public class Arm2 {
         } else {
             armPosition = status.getFrontPosition();
         }
+        arm.setPosition(armPosition);
     }
 
 
     public void ArmStackControl (int cycle) {
         armPosition = ArmConstants.stack_top - (cycle* ArmConstants.stack_difference);
+        arm.setPosition(armPosition);
     }
 
     public void moveArm(double pos){
