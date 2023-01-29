@@ -44,11 +44,25 @@ public class HighPoleFSM extends LinearOpMode {
         PARK,
         IDLE
     }
-    Field.autoZones zone = Field.autoZones.REDRIGHT;
+    
     //public HighPoleFSM(Field.autoZones z) {
         //zone = z;
    // }
     public void runOpMode() {
+
+        telemetry.log().add("Select Corner RightRed(Up), LeftRed(Down), RightBlue(Right), LeftBlue(Left)");
+        telemetry.update();
+        Field.autoZones zone = null;
+        while (zone == null) {
+            
+            if (gamepad1.dpad_up) zone = Field.autoZones.REDRIGHT;
+            else if (gamepad1.dpad_down) zone = Field.autoZones.REDLEFT;
+            else if (gamepad1.dpad_right) zone = Field.autoZones.BLUERIGHT;
+            else if (gamepad1.dpad_left) zone = Field.autoZones.BLUELEFT;
+        }
+        telemetry.log().add("Selected" + zone.toString());
+        telemetry.update();
+
         int xMult = 1;
         int yMult = 1;
         int headingMult = 1;
@@ -65,34 +79,56 @@ public class HighPoleFSM extends LinearOpMode {
                 yMult = -1;
                 headingMult = 1;
                 side = 40;
+                break;
             case BLUERIGHT:
                 xMult = -1;
                 yMult = 1;
                 headingMult = -1;
                 side = 40;
+                telemetry.log().add("Modifiers added");
+                break;
             case BLUELEFT:
                 xMult = 1;
                 yMult = 1;
                 headingMult = -1;
                 side = 140;
-
+                break;
         }
+
+        telemetry.log().add("auton started");
+        telemetry.update();
         SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
         Lift2 lift = new Lift2(hardwareMap, telemetry);
         Arm2 arm = new Arm2(this, hardwareMap, telemetry);
         Claw claw = new Claw(hardwareMap, telemetry);
-        Pose2d startPose = new Pose2d(32*xMult, 66*yMult, Math.toRadians(90*headingMult));
-        Field field = new Field(drive, 15, 16.5, zone);
+        telemetry.clearAll();
+        telemetry.log().add("hardware map read");
+        telemetry.update();
+        Pose2d startPose = new Pose2d(28.5*xMult, 66*yMult, Math.toRadians(90*headingMult));
+        telemetry.log().add(startPose.toString());
+        Field field = new Field(drive, 27.44/2.54, 25/2.54, zone);
         drive.setPoseEstimate(startPose);
         ElapsedTime matchTimer = new ElapsedTime();
         initCV();
-        claw.AutoControl(Claw.clawStatuses.CLOSED);
-        arm.arm.setPosition(0.01);
+        telemetry.log().add("CV inited");
+        telemetry.update();
+        arm.arm.setPosition(0);
+        telemetry.log().add("Ready to go");
+        telemetry.update();
         waitForStart();
+        if (isStopRequested()) return;
+        claw.AutoControl(Claw.clawStatuses.CLOSED);
+        sleep(500);
         matchTimer.reset();
         readSignal();
         TrajectorySequence startSequence = field.createFieldTrajectory(startPose)
                 .toPole(0*xMult, 1*yMult, FieldTrajectorySequence.sides.RIGHT, true, true)
+                .addMarker(() -> {
+                    arm.setArmPosition(Arm2.armStatuses.HIGH, true);
+                }, 1.5)
+                .addMarker(() -> {
+                    lift.setAutoPosition(Lift2.liftLevels.HIGH);
+                }, 3.5)
                 .build();
 
 
@@ -110,37 +146,46 @@ public class HighPoleFSM extends LinearOpMode {
         TrajectorySequence toStack = field.createFieldTrajectory(toPole.end())
                 .toStack(false, 0)
                 .build();
-        TrajectorySequence toParking = field.createFieldTrajectory(toPole.end())
+        TrajectorySequence toParking = field.createFieldTrajectory(startSequence.end())
                 //.toLocation(new Pose2d(toCone.end().getX(), toCone.end().getY(), Math.toRadians(180)), false)
+                .addMarker(() -> {
+                    lift.setHeight(0);
+
+                }, 1)
+                .addMarker(() -> {
+                    arm.setArmPosition(Arm2.armStatuses.PICKUP, false);
+                }, 3    )
                 .toSignalZone(signalZone.zoneNum)
                 .build();
         state = STATE.START;
         int cycle = 0;
         drive.followTrajectorySequenceAsync(startSequence);
-        lift.setAutoPosition(Lift2.liftLevels.HIGH);
-        arm.setArmPosition(Arm2.armStatuses.HIGH, true);
+
+      //  arm.setArmPosition(Arm2.armStatuses.HIGH, true);
         while (opModeIsActive() && !isStopRequested() && state != STATE.IDLE) {
             switch (state) {
                 case START:
                     telemetry.addData("state", "START");
-                    if (!drive.isBusy()) {
-                        state = STATE.TOSTACK;
-                        claw.AutoControl(Claw.clawStatuses.OPEN);
+                    if (!drive.isBusy() && !lift.isBusy()) {
+                        state = STATE.PARK;
+                        sleep(500);
+                        claw.AutoControl(Claw.clawStatuses.DROP);
+                        sleep(500);
                         int finalCycle = cycle;
-                        toStackStart = field.createFieldTrajectory(startSequence.end()) //new Pose2d(clearPoseEnd.getX(), clearPoseEnd.getY(), Math.toRadians(0))
-                                .toStack(false, finalCycle)
-                                .addMarker(() -> {
-                                    lift.setAutoPosition(Lift2.liftLevels.FLOOR);
-                                    arm.ArmStackControl(finalCycle);
-                                }, 500)
-                                .build();
-                        cycle++;
-                        drive.followTrajectorySequenceAsync(toStackStart);
+//                        toStackStart = field.createFieldTrajectory(startSequence.end()) //new Pose2d(clearPoseEnd.getX(), clearPoseEnd.getY(), Math.toRadians(0))
+//                                .toStack(false, finalCycle)
+//                                .addMarker(() -> {
+//                                    lift.setAutoPosition(Lift2.liftLevels.FLOOR);
+//                                    arm.ArmStackControl(finalCycle);
+//                                }, 1)
+//                                .build();
+                   //     cycle++;
+                        drive.followTrajectorySequenceAsync(toParking);
                     }
                     break;
                 case TOSTACK:
                     telemetry.addData("state", "TOSTACK");
-                    if (!drive.isBusy()) {
+                    if (!drive.isBusy()&& !lift.isBusy()) {
                         state = STATE.CYCLE;
                         claw.AutoControl(Claw.clawStatuses.CLOSED);
                         sleep(500);
@@ -151,7 +196,7 @@ public class HighPoleFSM extends LinearOpMode {
                     break;
                 case CYCLE:
                     telemetry.addData("state", "CYCLE");
-                    if (!drive.isBusy()) {
+                    if (!drive.isBusy()&& !lift.isBusy()) {
                         if (cycle <= 4 && matchTimer.seconds() < 20) {
                             state = STATE.TOSTACK;
                             claw.AutoControl(Claw.clawStatuses.OPEN);

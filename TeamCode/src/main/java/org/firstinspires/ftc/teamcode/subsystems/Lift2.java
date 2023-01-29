@@ -31,6 +31,7 @@ public class Lift2 {
         }
     }
     private static final double TICKS_PER_REV = 532;
+    public static int TeleopTopAdjust = -2;
 
     public static double SPOOL_RADIUS = 0.70; // in
     public static double GEAR_RATIO = 1; // output (spool) speed / input (motor) speed
@@ -38,7 +39,7 @@ public class Lift2 {
     // the operating range of the elevator is restricted to [0, MAX_HEIGHT]
     public static double MAX_HEIGHT = 24; // in
 
-    public static PIDCoefficients PID = new PIDCoefficients(3.5, 0, 0);
+    public static PIDCoefficients PID = new PIDCoefficients(2.5, 0, 0.2);
 
     public static double MAX_VEL = 25; // in/s
     public static double MAX_ACCEL = 30; // in/s^2
@@ -89,7 +90,7 @@ public class Lift2 {
         // of motion (e.g., gravity, kinetic friction, or a combination thereof), it may be
         // beneficial to compensate for it with a gravity feedforward
         controller = new PIDFController(PID, kV, kA, kStatic);
-        offset = leftLiftMotor.getCurrentPosition();
+        offset = rightLiftMotor.getCurrentPosition();
 
         //set telemetry
         this.telemetry = telemetry;
@@ -114,7 +115,7 @@ public class Lift2 {
     }
 
     public double getCurrentHeight() {
-        return encoderTicksToInches(leftLiftMotor.getCurrentPosition() - offset);
+        return encoderTicksToInches(rightLiftMotor.getCurrentPosition() - offset);
     }
 
     public void update() {
@@ -152,7 +153,7 @@ public class Lift2 {
         } else if (gamepad2.dpad_up) {
             setHeight(liftLevels.MED.height);
         } else if (gamepad2.dpad_right) {
-            setHeight(liftLevels.HIGH.height);
+            setHeight(liftLevels.HIGH.height+TeleopTopAdjust);
         }
         if (isBusy()) {
             update();

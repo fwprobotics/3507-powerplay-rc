@@ -35,6 +35,7 @@ public class FieldTrajectorySequence {
         public static double turnoffset = 0;
         public static double parkingoffset = 3;
         public static double parkingoffsetx = -3;
+        public static double highconeoffset = 2.5;
     }
     public double border;
 
@@ -435,9 +436,9 @@ public class FieldTrajectorySequence {
 
     public double getDistance(double servoPos, boolean backwardsDrop) {
         if (backwardsDrop) {
-            return (Math.abs(Math.cos(Math.toRadians(servoPos * 235 - 69)) * 291) - 26 - 43) / 25.4;
+            return (Math.abs(Math.cos(Math.toRadians(servoPos * 235 - 55)) * 291) - 26 - 43) / 25.4 +FieldTrajContstants.highconeoffset;
         } else {
-            return (Math.abs(Math.cos(Math.toRadians(servoPos * 235 - 69)) * 291) + 26 + 43) / 25.4;
+            return (Math.abs(Math.cos(Math.toRadians(servoPos * 235 - 55)) * 291) + 26 + 43) / 25.4 + FieldTrajContstants.highconeoffset;
         }
     }
 

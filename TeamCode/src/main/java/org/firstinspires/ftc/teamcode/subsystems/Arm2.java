@@ -3,8 +3,10 @@ package org.firstinspires.ftc.teamcode.subsystems;
 import com.acmerobotics.dashboard.config.Config;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.HardwareMap;
+import com.qualcomm.robotcore.hardware.PwmControl;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.DigitalChannel;
+import com.qualcomm.robotcore.hardware.ServoControllerEx;
 
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
@@ -18,6 +20,7 @@ control for nub and movement of 4-bar. By Jake, 1/27/20.
 public class Arm2 {
 
     public Servo arm;
+    public ServoControllerEx servoController;
 
     public LinearOpMode l;
     public Telemetry realTelemetry;
@@ -25,11 +28,11 @@ public class Arm2 {
     @Config
     public static class ArmConstants {
 
-        public static double arm_pickup = 0.01;
+        public static double arm_pickup = 0;
         public static double arm_low_front = 0.5; //0.5 0.37
         public static double arm_mid_front = 0.55;
         public static double arm_high_front = 0.55;
-        public static double arm_high_back = 1;
+        public static double arm_high_back = 0.9;
         public static double arm_mid_back = 1;
         public static double arm_low_back = 1;
         public static  double arm_auto_dropoff = 0.5;
@@ -38,7 +41,8 @@ public class Arm2 {
         public static double auto_speed_slow = 0.0005;
         public static double auto_speed_fast = 0.005;
         public static double tolerance = 0.01;
-        public static double teleop_speed = 0.002;
+        public static double teleop_speed = 0.003;
+        public static double manual_speed = 0.003;
 
     }
 
@@ -72,6 +76,8 @@ public class Arm2 {
         realTelemetry = telemetry;
 
         arm = hardwareMap.servo.get("armservo"); // Really not important which is which
+        servoController = (ServoControllerEx) arm.getController();
+        servoController.setServoPwmRange(arm.getPortNumber(),new PwmControl.PwmRange(900, 2100));
 
         arm.setPosition(armStatus.frontPosition); //sets current pos to 0
 
@@ -118,7 +124,7 @@ public class Arm2 {
     // Control Functions
 
 //     Takes in toggles from main teleop code - flip is a toggle, all others trigger on press
-    public void TeleopControl(boolean down, boolean low, boolean mid, boolean high, boolean flipToggle, double manualInput) {
+    public void TeleopControl(boolean down, boolean low, boolean mid, boolean high, boolean flipToggle) {
         if (down){
             armStatus = armStatuses.PICKUP;
             armPosition = flipToggle ? (armStatus.getFrontPosition()) : armStatus.getBackPosition();
@@ -127,18 +133,18 @@ public class Arm2 {
             armStatus = armStatuses.LOW;
             armPosition = flipToggle ? (armStatus.getFrontPosition()) : armStatus.getBackPosition();
         }
-//        if (mid){
-//            armStatus = armStatuses.MID;
-//            armPosition = flipToggle ? (armStatus.getFrontPosition()) : armStatus.getBackPosition();
-//        }
-//        if (high){
-//            armStatus = armStatuses.HIGH;
-//            armPosition = flipToggle ? (armStatus.getFrontPosition()) : armStatus.getBackPosition();
-//        }
+        if (mid){
+            armStatus = armStatuses.MID;
+            armPosition = flipToggle ? (armStatus.getFrontPosition()) : armStatus.getBackPosition();
+        }
+        if (high){
+            armStatus = armStatuses.HIGH;
+            armPosition = flipToggle ? (armStatus.getFrontPosition()) : armStatus.getBackPosition();
+        }
 
-        armPosition -= ArmConstants.teleop_speed*manualInput;
 
-        update();
+
+//        update();
 
 
         //TODO: Add manual control
@@ -146,6 +152,12 @@ public class Arm2 {
 
 
 
+    }
+
+    public void ManualControl(double manualInput){
+        if (armPosition >= ArmConstants.manual_speed || manualInput >= 0.0) {
+            armPosition -= ArmConstants.manual_speed * manualInput;
+        }
     }
 
     public void update() {
