@@ -63,13 +63,13 @@ public class Teleop extends LinearOpMode {
                 mid.toggle(gamepad2.dpad_up);
                 low.toggle(gamepad2.dpad_left);
                 pickup.toggle(gamepad2.dpad_down);
-                flip.toggle(gamepad2.x);
+             //   flip.toggle(gamepad2.x);
                 clawToggle.toggle(gamepad2.right_bumper);
                 claw.TeleopControl(gamepad2.a, gamepad2.y, gamepad2.b);
                 lift.teleOpControl(gamepad2);
 //                arm.ManualControl(gamepad2.left_stick_y);
               //  if (high.newPress() || mid.newPress() || low.newPress() || pickup.newPress() || flip.newPress()) {
-                    arm.TeleopControl(pickup.newPress(), low.newPress(), mid.newPress(), high.newPress(), true);
+                    arm.TeleopControl(pickup.newPress(), low.newPress(), mid.newPress(), high.newPress(), !gamepad2.left_bumper);
              //   }
                 arm.ManualControl(gamepad2.left_stick_y);
 

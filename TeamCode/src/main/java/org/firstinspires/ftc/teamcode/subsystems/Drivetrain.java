@@ -184,6 +184,7 @@ public class Drivetrain {
         realTelemetry.addData("Front Right", frontRightDrive.getCurrentPosition());
         realTelemetry.addData("Back Right", backRightDrive.getCurrentPosition());
         realTelemetry.addData("Toggle Field Relative", fieldRelativeDrive.state());
+        realTelemetry.addData("Slow Mode Multiplier", slowModeMult);
 
 
     }
