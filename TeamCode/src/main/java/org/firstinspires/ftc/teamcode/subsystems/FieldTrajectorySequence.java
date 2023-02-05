@@ -35,7 +35,7 @@ public class FieldTrajectorySequence {
         public static double turnoffset = 0;
         public static double parkingoffset = 3;
         public static double parkingoffsetx = -3;
-        public static double highconeoffset = 2.5;
+        public static double highconeoffset = 2;
     }
     public double border;
 
@@ -146,6 +146,12 @@ public class FieldTrajectorySequence {
         return toLocation(targetPole, xfirst);
     }
 
+    public FieldTrajectorySequence toPole(int poleX, int poleY, double heading, boolean backwardsDrop, boolean xfirst, Pose2d offset) {
+        Pose2d targetPole = getTargetPole(poleX, poleY, heading, backwardsDrop);
+        targetPole = targetPole.plus(offset);
+        return toLocation(targetPole, xfirst);
+    }
+
     public FieldTrajectorySequence toPole(int poleX, int poleY, double heading, boolean backwardsDrop, boolean xfirst) {
         Pose2d targetPole = getTargetPole(poleX, poleY, heading, backwardsDrop);
         return toLocation(targetPole, xfirst);
@@ -198,7 +204,7 @@ public class FieldTrajectorySequence {
 
 
     public FieldTrajectorySequence toStack(boolean xfirst, int cycle) {
-        double x =  72-(getDistance(Arm2.ArmConstants.stack_top-(Arm2.ArmConstants.stack_difference*cycle), false)+2);
+        double x =  72-(getDistance(Arm2.ArmConstants.stack_top-(Arm2.ArmConstants.stack_difference*cycle), false));
         double y = 12;
 
         switch (autoZone) {
@@ -218,6 +224,32 @@ public class FieldTrajectorySequence {
         return  this;
     }
 
+    public FieldTrajectorySequence toStack(boolean xfirst, int cycle, int heading) {
+
+       double distance =         (getDistance(Arm2.ArmConstants.stack_top-(Arm2.ArmConstants.stack_difference*cycle), false));
+        double x =  72;
+        double y = 12;
+        double[] offset = getOffsetFromDegrees(distance, heading);
+
+//        x -= offset[0];
+//        y -= offset[1];
+
+        switch (autoZone) {
+            case REDRIGHT:
+                toLocation(new Pose2d(x-offset[0], -y-offset[1], Math.toRadians(heading+FieldTrajContstants.turnoffset)), xfirst);
+                break;
+            case REDLEFT:
+                toLocation(new Pose2d(-x-offset[0], -y-offset[1], Math.toRadians(heading-FieldTrajContstants.turnoffset)), xfirst);
+                break;
+            case BLUERIGHT:
+                toLocation(new Pose2d(-x-offset[0], y-offset[1], Math.toRadians(heading-FieldTrajContstants.turnoffset)), xfirst);
+                break;
+            case BLUELEFT:
+                toLocation(new Pose2d(x-offset[0], y-offset[1], Math.toRadians(heading+FieldTrajContstants.turnoffset)), xfirst);
+                break;
+        }
+        return  this;
+    }
     public FieldTrajectorySequence addMarker(MarkerCallback callback, double delay) {
         double currentDuration;
         try {
@@ -435,10 +467,11 @@ public class FieldTrajectorySequence {
     }
 
     public double getDistance(double servoPos, boolean backwardsDrop) {
-        if (backwardsDrop) {
-            return (Math.abs(Math.cos(Math.toRadians(servoPos * 235 - 55)) * 291) - 26 - 43) / 25.4 +FieldTrajContstants.highconeoffset;
+        if (servoPos <= 0.5) {
+            return (Math.abs(Math.cos(Math.toRadians(servoPos * 182 - 68)) * 12 + 2 + 1.25)); // 25.4 + FieldTrajContstants.highconeoffset;
+
         } else {
-            return (Math.abs(Math.cos(Math.toRadians(servoPos * 235 - 55)) * 291) + 26 + 43) / 25.4 + FieldTrajContstants.highconeoffset;
+            return (Math.abs(Math.cos(Math.toRadians(((servoPos-1/2) * 314)  + 23)) * 12 + 2 + 1.25));
         }
     }
 

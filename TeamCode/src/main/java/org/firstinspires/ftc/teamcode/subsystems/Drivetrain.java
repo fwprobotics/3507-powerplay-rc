@@ -48,6 +48,7 @@ public class Drivetrain {
 //        public static double x_modifier = 0.85;
         public static double speedFactor = 0.8;
         public static double power_modifier = 0.6;
+        public static double lift_up_modifier = 0.2;
 
     }
 
@@ -95,7 +96,7 @@ public class Drivetrain {
     }
 
     //This is the teleop drive formulas
-    public void JoystickMovement(double leftStickY, double leftStickX, double rightStickX, double rightstickY, boolean slowModeControl, boolean fieldRelativeToggle){
+    public void JoystickMovement(double leftStickY, double leftStickX, double rightStickX, double rightstickY, boolean slowModeControl, boolean fieldRelativeToggle, boolean liftUp){
 
 //        double RightStickAngle;
 

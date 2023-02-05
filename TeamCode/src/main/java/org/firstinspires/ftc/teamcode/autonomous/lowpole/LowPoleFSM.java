@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode.autonomous.lowpole;
 
 import com.acmerobotics.roadrunner.geometry.Pose2d;
+import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
@@ -11,17 +12,19 @@ import org.firstinspires.ftc.teamcode.subsystems.Arm2;
 import org.firstinspires.ftc.teamcode.subsystems.Claw;
 import org.firstinspires.ftc.teamcode.subsystems.Field;
 import org.firstinspires.ftc.teamcode.subsystems.FieldTrajectorySequence;
+import org.firstinspires.ftc.teamcode.subsystems.Lift2;
 import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequence;
 import org.openftc.easyopencv.OpenCvCamera;
 import org.openftc.easyopencv.OpenCvCameraFactory;
 import org.openftc.easyopencv.OpenCvCameraRotation;
 
+@Autonomous
 public class LowPoleFSM extends LinearOpMode {
     OpenCvCamera webcam;
     ApriltagDetectionPipeline pipeline;
 
 
-    RightRedLowPole.SignalZone signalZone;
+    SignalZone signalZone;
 
     public enum SignalZone {
         LEFT (1), // A
@@ -41,128 +44,196 @@ public class LowPoleFSM extends LinearOpMode {
         PARK,
         IDLE
     }
-    Field.autoZones zone;
-    public LowPoleFSM(Field.autoZones z) {
-        zone = z;
-    }
+
+    //public HighPoleFSM(Field.autoZones z) {
+    //zone = z;
+    // }
     public void runOpMode() {
+
+        telemetry.log().add("Select Corner RightRed(Up), LeftRed(Down), RightBlue(Right), LeftBlue(Left)");
+        telemetry.update();
+        Field.autoZones zone = null;
+        while (zone == null && !gamepad1.x) {
+
+            if (gamepad1.dpad_up) zone = Field.autoZones.REDRIGHT;
+            else if (gamepad1.dpad_down) zone = Field.autoZones.REDLEFT;
+            else if (gamepad1.dpad_right) zone = Field.autoZones.BLUERIGHT;
+            else if (gamepad1.dpad_left) zone = Field.autoZones.BLUELEFT;
+        }
+        telemetry.log().add("Selected" + zone.toString());
+        telemetry.update();
+
         int xMult = 1;
         int yMult = 1;
         int headingMult = 1;
-        FieldTrajectorySequence.sides side = FieldTrajectorySequence.sides.UP;
+        double side = 140;
         switch (zone) {
             case REDRIGHT:
                 xMult = 1;
                 yMult = -1;
                 headingMult = 1;
-                side = FieldTrajectorySequence.sides.UP;
+                side = 45;
                 break;
             case REDLEFT:
                 xMult = -1;
                 yMult = -1;
                 headingMult = 1;
-                side = FieldTrajectorySequence.sides.UP;
+                side = 40;
+                break;
             case BLUERIGHT:
                 xMult = -1;
                 yMult = 1;
                 headingMult = -1;
-                side = FieldTrajectorySequence.sides.DOWN;
+                side = 40;
+                telemetry.log().add("Modifiers added");
+                break;
             case BLUELEFT:
                 xMult = 1;
                 yMult = 1;
                 headingMult = -1;
-                side = FieldTrajectorySequence.sides.DOWN;
-
+                side = 140;
+                break;
         }
+
+        telemetry.log().add("auton started");
+        telemetry.update();
         SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
-        //   Lift lift = new Lift(Lift.liftRunMode.AUTONOMOUS, this, hardwareMap, telemetry);
+        Lift2 lift = new Lift2(hardwareMap, telemetry, gamepad2);
         Arm2 arm = new Arm2(this, hardwareMap, telemetry);
         Claw claw = new Claw(hardwareMap, telemetry);
-        Pose2d startPose = new Pose2d(32*xMult, 66*yMult, Math.toRadians(90*headingMult));
-        Field field = new Field(drive, 15, 16.5, zone);
+        telemetry.clearAll();
+        telemetry.log().add("hardware map read");
+        telemetry.update();
+        Pose2d startPose = new Pose2d(28.5*xMult, 66*yMult, Math.toRadians(90*headingMult));
+        telemetry.log().add(startPose.toString());
+        Field field = new Field(drive, 27.44/2.54, 25/2.54, zone);
         drive.setPoseEstimate(startPose);
         ElapsedTime matchTimer = new ElapsedTime();
+        telemetry.log().add("Initing CV");
         initCV();
-        claw.AutoControl(Claw.clawStatuses.CLOSED);
+        telemetry.log().add("CV inited");
+        telemetry.update();
+        arm.arm.setPosition(0);
+        telemetry.log().add("Ready to go");
+        telemetry.update();
         waitForStart();
+        if (isStopRequested()) return;
+        telemetry.log().add("Started");
+        claw.AutoControl(Claw.clawStatuses.CLOSED);
+        sleep(500);
         matchTimer.reset();
+        telemetry.log().add("Reading the signal");
         readSignal();
+        telemetry.log().add("Building traj");
         TrajectorySequence startSequence = field.createFieldTrajectory(startPose)
-                .toLocation(new Pose2d(12*xMult, 60*yMult, Math.toRadians(90*headingMult)), true)
-                .toPole(2*xMult, 1*yMult, side, false, false)
+                .toPole(2*xMult, 1*yMult, FieldTrajectorySequence.sides.RIGHT, true, true)
+                .addMarker(() -> {
+                    arm.setArmPosition(Arm2.armStatuses.LOW, true);
+                }, 1.5)
                 .build();
 
 
-        TrajectorySequence toStack = field.createFieldTrajectory(startSequence.end()) //new Pose2d(clearPoseEnd.getX(), clearPoseEnd.getY(), Math.toRadians(0))
-                .toStack(false, 1)
+//        TrajectorySequence toStackStart = field.createFieldTrajectory(startSequence.end()) //new Pose2d(clearPoseEnd.getX(), clearPoseEnd.getY(), Math.toRadians(0))
+//                .toStack(false, 5)
+//
+//                .build();
 
-                .build();
 
-        TrajectorySequence toPole =
-                field.createFieldTrajectory(toStack.end())
-                        .toPole(2*xMult, 1*yMult, side, false, true)
-                        .build();
-        TrajectorySequence toParking = field.createFieldTrajectory(toPole.end())
+
+//        TrajectorySequence toPole =
+//                field.createFieldTrajectory(toStackStart.end())
+//                        .toPole(1*xMult, 0*yMult, side, true, true)
+//                        .addMarker(() -> {
+//                            lift.setAutoPosition(Lift2.liftLevels.HIGH);
+//                        }, 1)
+//                        .build();
+//        TrajectorySequence toStack = field.createFieldTrajectory(toPole.end())
+//                .toStack(false, 0)
+//                .build();
+        TrajectorySequence toParking = field.createFieldTrajectory(startSequence.end())
                 //.toLocation(new Pose2d(toCone.end().getX(), toCone.end().getY(), Math.toRadians(180)), false)
+                .addMarker(() -> {
+                    // arm.setArmPosition(Arm2.armStatuses.PICKUP, false);
+                }, 1)
+                .addMarker(() -> {
+                    arm.arm.setPosition(0);
+                }, 2    )
                 .toSignalZone(signalZone.zoneNum)
                 .build();
         state = STATE.START;
         int cycle = 0;
+        telemetry.log().add("starting to drive");
         drive.followTrajectorySequenceAsync(startSequence);
-        arm.setArmPosition(Arm2.armStatuses.LOW, false);
+
+        //  arm.setArmPosition(Arm2.armStatuses.HIGH, true);
+
         while (opModeIsActive() && !isStopRequested() && state != STATE.IDLE) {
-        switch (state) {
-            case START:
-                if (!drive.isBusy()) {
-                    state = STATE.CYCLE;
-                }
-                break;
-            case TOSTACK:
-                if (!drive.isBusy()) {
-                    state = STATE.CYCLE;
-                    arm.setArmPosition(Arm2.armStatuses.LOW, false);
-                    drive.followTrajectorySequenceAsync(toPole);
-                }
-                break;
-            case CYCLE:
-                if (!drive.isBusy()) {
-                    if (cycle <= 4 && matchTimer.seconds() < 20) {
+            switch (state) {
+                case START:
+                    telemetry.addData("state", "START");
+                    if (!drive.isBusy() && !lift.isBusy() && !arm.isBusy()) {
                         state = STATE.TOSTACK;
-                        cycle++;
-                        int finalCycle = cycle;
-                        toStack = field.createFieldTrajectory(startSequence.end()) //new Pose2d(clearPoseEnd.getX(), clearPoseEnd.getY(), Math.toRadians(0))
-                                .toStack(false, 1)
-                                .addMarker(() -> {
-                                    arm.ArmStackControl(finalCycle);
-                                }, 500)
-                                .build();
-                        drive.followTrajectorySequenceAsync(toStack);
+                        drive.setAngle(Math.toRadians(90*headingMult));
+                        sleep(500);
+                        claw.AutoControl(Claw.clawStatuses.DROP);
+                        sleep(500);
                         arm.ArmStackControl(cycle);
-                    } else {
-                        state = STATE.PARK;
-                        drive.followTrajectorySequenceAsync(toParking);
+                        cycle++;
                     }
-                }
-                break;
-            case PARK:
-                if (!drive.isBusy()) {
-                    state = STATE.IDLE;
-                }
-                break;
-            case IDLE:
-                break;
+                    break;
+                case TOSTACK:
+                    telemetry.addData("state", "TOSTACK");
+                    if (!drive.isBusy()&& !lift.isBusy() && !arm.isBusy()) {
+                        state = STATE.CYCLE;
+                        drive.setAngle(Math.toRadians(90*headingMult));
+                        claw.AutoControl(Claw.clawStatuses.CLOSED);
+
+                        sleep(500);
+                        arm.setArmPosition(Arm2.armStatuses.LOW, true );
+                    }
+                    break;
+                case CYCLE:
+                    telemetry.addData("state", "CYCLE");
+                    if (!drive.isBusy()&& !lift.isBusy() && !arm.isBusy()) {
+                        if (cycle <= 4 && matchTimer.seconds() < 22) {
+                            state = STATE.TOSTACK;
+                            drive.setAngle(Math.toRadians(90*headingMult));
+                            claw.AutoControl(Claw.clawStatuses.OPEN);
+                            sleep(500);
+                            arm.ArmStackControl(cycle);
+                            cycle++;
 
 
+                        } else {
+                            state = STATE.PARK;
+                            claw.AutoControl(Claw.clawStatuses.OPEN);
+                            sleep(500);
+                            drive.followTrajectorySequenceAsync(toParking);
+                        }
+                    }
+                    break;
+                case PARK:
+                    telemetry.addData("state", "PARK");
+                    if (!drive.isBusy() && !lift.isBusy() && !arm.isBusy()) {
+                        state = STATE.IDLE;
+                    }
+                    break;
+                case IDLE:
+                    break;
+
+
+
+            }
+
+            drive.update();
+            lift.update();
+            arm.autoUpdate();
+            telemetry.update();
 
         }
 
-        drive.update();
-        arm.update();
 
-        }
-
-
-}
+    }
 
 
     private void initCV() {
@@ -195,9 +266,9 @@ public class LowPoleFSM extends LinearOpMode {
     }
     private void readSignal() {
         int signalzone = pipeline.getLastDetection();
-        if (signalzone == 1) signalZone = RightRedLowPole.SignalZone.LEFT;
-        else if (signalzone == 2) signalZone = RightRedLowPole.SignalZone.MIDDLE;
-        else if (signalzone == 3) signalZone = RightRedLowPole.SignalZone.RIGHT;
+        if (signalzone == 1) signalZone = SignalZone.LEFT;
+        else if (signalzone == 2) signalZone = SignalZone.MIDDLE;
+        else if (signalzone == 3) signalZone = SignalZone.RIGHT;
         else signalZone = signalZone.MIDDLE;
         webcam.closeCameraDevice();
 

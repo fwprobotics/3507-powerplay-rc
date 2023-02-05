@@ -14,11 +14,11 @@ public class MeepMeepTesting {
 
 
         RoadRunnerBotEntity myBot = new DefaultBotBuilder(meepMeep)
-                .setDimensions(10.80315, 9.84)
+                .setDimensions(27.44/2.54, (25/2.54)+2)
                 // Set bot constraints: maxVel, maxAccel, maxAngVel, maxAngAccel, track width
-                .setConstraints(54.852618423869984, 30, 3, 3, 8.3)
+                .setConstraints(25, 20, 3, 3, 8.3)
                 .followTrajectorySequence(drive -> {
-                    Field field = new Field(drive, 10.80315, 9.84, Field.autoZones.REDRIGHT);
+                    Field field = new Field(drive, 27.44/2.54, 25/2.54, Field.autoZones.REDRIGHT);
                     //new Pose2d(36, -66, Math.toRadians(90))
                     //new Pose2d(12, -24, Math.toRadians(180))
 //                        drive.trajectorySequenceBuilder(new Pose2d(32, -66, Math.toRadians(90)))
@@ -27,7 +27,7 @@ public class MeepMeepTesting {
 //                                //.splineToConstantHeading(new Vector2d(18, -12), Math.toRadians(0))
 //                                //.splineToConstantHeading(new Vector2d(60, -12), Math.toRadians(0))
 //                                //END STACK
-////                                .splineToConstantHeading(new Vector2d(30, -60), Math.toRadians(0))
+////                                .splineToConstantHeading(new Vector2d(heading, -60), Math.toRadians(0))
 ////                               // .strafeTo(new Vector2d(12, -55))
 ////                                .lineToSplineHeading(new Pose2d(12, -24, Math.toRadians(180)))
 //                              //  .build();
@@ -36,9 +36,9 @@ public class MeepMeepTesting {
 //                                //.strafeTo(new Vector2d(12, -55))
 //                                // .lineToSplineHeading(new Pose2d(12, -24, Math.toRadians(180)))
 //                                .lineToLinearHeading(new Pose2d(60, -18, Math.toRadians(35)))
-//                                //.splineToSplineHeading(new Pose2d(58, -24, Math.toRadians(30)), Math.toRadians(34))
+//                                //.splineToSplineHeading(new Pose2d(58, -24, Math.toRadians(heading)), Math.toRadians(34))
 //                                 //.lineToConstantHeading(new Vector2d(58, -16))
-//                                //.splineToSplineHeading(new Pose2d(60, -18, Math.toRadians(30)), Math.toRadians(220))
+//                                //.splineToSplineHeading(new Pose2d(60, -18, Math.toRadians(heading)), Math.toRadians(220))
 //
 //                                //.lineTo(new Vector2d(36, -47))
 //                               // .lineToConstantHeading(new Vector2d(12, -24))
@@ -53,41 +53,45 @@ public class MeepMeepTesting {
 //                    TrajectorySequenceBuilder trajectory = drive.trajectorySequenceBuilder(new Pose2d(32, -48, Math.toRadians(90)));
 //                    trajectory = field.toPole(trajectory, drive, -1, 0, Field.sides.RIGHT, true);
 //new Pose2d(32, -66, Math.toRadians(90))
-                    FieldTrajectorySequence fieldTrajectorySequence = field.createFieldTrajectory(new Pose2d(-32, 66, Math.toRadians(-90)))
+                    int heading = 25;
+                    
+                    FieldTrajectorySequence fieldTrajectorySequence = field.createFieldTrajectory(new Pose2d(32, -66, Math.toRadians(90)))
                         //    .toPole(false, true)
 //                            .toStack(false)
 //                            .toPole(2, -1, FieldTrajectorySequence.sides.UP, false, false)
 //                           // .toStack(false)
                            // .toPole(2, -1, FieldTrajectorySequence.sides.UP, false, false)
                            // .toStack(false)
-                            .toPole(-1, 0, 150, false, true)
+                       //     .toPole(0, -1, 180, true, true);
+
+                            .toPole(2, -1, 180+heading, true, true)
                             .wait(0.5)
-                            .toStack(false, 0)
+                            .toStack(false, 0, heading)
                             .wait(0.5)
-                            .toPole(-1, 0, 140,true, true)
+                            .toPole(2, -1, 180+heading, true, true)
                             .wait(0.5)
-                            .toStack(false, 1)
+                            .toStack(false, 1, heading)
                             .wait(0.5)
-                            .toPole(-1, 0, 140, true, true)
+                            .toPole(2, -1, 180+heading, true, true)
                             .wait(0.5)
-                            .toStack(false, 2)
+                            .toStack(false, 2, heading)
                             .wait(0.5)
-                            .toPole(1, 0, 140, true, true)
+                            .toPole(2, -1, 180+heading, true, true)
                             .wait(0.5)
-                            .toStack(false, 3)
+                            .toStack(false, 3, heading)
                             .wait(0.5)
-                            .toPole(1, 0, 140, true, true)
+                            .toPole(2, -1, 180+heading, true, true)
                             .wait(0.5)
-                            .toStack(false, 4)
+                            .toStack(false, 4, heading)
                             .wait(0.5)
-                            .toPole(1, 0, 140, true, true)
+                            .toPole(2, -1, 180+heading, true, true)
                             .wait(0.5)
 //                            //.toPole(2, 1, FieldTrajectorySequence.sides.DOWN, false, true)
 //                      //      .toStack(false)
-                            .toSignalZone(1)
-                            //.spline(new Pose2d(60, -12), Math.toRadians(-10))
-                           // .toPole(-1, 0, 70, false, true)
-                            ;
+                            .toSignalZone(1);
+//                            //.spline(new Pose2d(60, -12), Math.toRadians(-10))
+//                           // .toPole(-1, 0, 70, false, true)
+//                            ;
                     return fieldTrajectorySequence.build();
 
 

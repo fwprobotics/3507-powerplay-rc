@@ -2,14 +2,12 @@ package org.firstinspires.ftc.teamcode.subsystems;
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.roadrunner.control.PIDCoefficients;
 import com.acmerobotics.roadrunner.control.PIDFController;
-import com.acmerobotics.roadrunner.drive.Drive;
 import com.acmerobotics.roadrunner.profile.MotionProfile;
 import com.acmerobotics.roadrunner.profile.MotionProfileGenerator;
 import com.acmerobotics.roadrunner.profile.MotionState;
 import com.acmerobotics.roadrunner.util.NanoClock;
-import com.qualcomm.hardware.motors.NeveRest20Gearmotor;
+import com.arcrobotics.ftclib.controller.PIDController;
 import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
@@ -20,7 +18,7 @@ import org.firstinspires.ftc.robotcore.external.Telemetry;
  * don't use unless we really have to
  */
 @Config
-public class Lift2 {
+public class Lift3 {
     public enum liftLevels {
         FLOOR (0),
         LOW (0),
@@ -40,7 +38,7 @@ public class Lift2 {
     // the operating range of the elevator is restricted to [0, MAX_HEIGHT]
     public static double MAX_HEIGHT = 24; // in
 
-    public static PIDCoefficients PID = new PIDCoefficients(1.5, 0, 0.6);
+
 
     public static double MAX_VEL = 25; // in/s
     public static double MAX_ACCEL = 30; // in/s^2
@@ -49,20 +47,25 @@ public class Lift2 {
     public static double kA = 0;
     public static double kStatic = 0;
 
+
+
     public static double power_modifier = 0.4;
 
 
     public DcMotor leftLiftMotor;
     public DcMotor rightLiftMotor;
-    private PIDFController controller;
-    private MotionProfile profile;
-    private NanoClock clock = NanoClock.system();
-    private double profileStartTime, desiredHeight = 0;
+  //  private PIDController controller;
+    private double desiredHeight = 0;
     private int offset;
     private Gamepad gamepad2;
 
+    public static PIDController controller = new PIDController(1.5, 0, 0.6);
+
     private static double encoderTicksToInches(int ticks) {
         return SPOOL_RADIUS * 2 * Math.PI * GEAR_RATIO * ticks / TICKS_PER_REV;
+    }
+    private static int inchesToEncoderTicks(double inches) {
+        return (int) ((inches / (SPOOL_RADIUS * 2 * Math.PI * GEAR_RATIO)) * TICKS_PER_REV);
     }
 
     public static double rpmToVelocity(double rpm) {
@@ -75,8 +78,8 @@ public class Lift2 {
 
 
     private  Telemetry telemetry;
-    public Lift2(HardwareMap hardwareMap, Telemetry telemetry, Gamepad gp) {
-        leftLiftMotor = hardwareMap.dcMotor.get("leftLiftMotor");
+    public Lift3(HardwareMap hardwareMap, Telemetry telemetry, Gamepad gp) {
+        leftLiftMotor = hardwareMap.dcMotor.get( "leftLiftMotor");
         rightLiftMotor = hardwareMap.dcMotor.get("rightLiftMotor");
         leftLiftMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         rightLiftMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
@@ -90,8 +93,7 @@ public class Lift2 {
 
         // note: if the elevator is affected by a non-negligible constant force along the direction
         // of motion (e.g., gravity, kinetic friction, or a combination thereof), it may be
-        // beneficial to compensate for it with a gravity feedforward
-        controller = new PIDFController(PID, kV, kA, kStatic);
+        // beneficial to compensate for it with a gravity feedforward;
         offset = rightLiftMotor.getCurrentPosition();
 
         //set telemetry
@@ -99,21 +101,15 @@ public class Lift2 {
     }
 
     public boolean isBusy() {
-        return profile != null && (clock.seconds() - profileStartTime) <= profile.duration();
+        return Math.abs(rightLiftMotor.getCurrentPosition() - desiredHeight) > 50;
     }
 
     public void setHeight(double height) {
         height = Math.min(Math.max(0, height), MAX_HEIGHT);
 
-        double time = clock.seconds() - profileStartTime;
-        MotionState start = isBusy() ? profile.get(time) : new MotionState(desiredHeight, 0, 0, 0);
-        MotionState goal = new MotionState(height, 0, 0, 0);
-        profile = MotionProfileGenerator.generateSimpleMotionProfile(
-                start, goal, MAX_VEL, MAX_ACCEL, MAX_JERK
-        );
-        profileStartTime = clock.seconds();
 
-        this.desiredHeight = height;
+
+        this.desiredHeight = inchesToEncoderTicks(height);
     }
 
     public double getCurrentHeight() {
@@ -123,18 +119,9 @@ public class Lift2 {
     public void update() {
         double power;
         double currentHeight = getCurrentHeight();
-        if (isBusy()) {
-            // following a profile
-            double time = clock.seconds() - profileStartTime;
-            MotionState state = profile.get(time);
-            controller.setTargetPosition(state.getX());
-            controller.setTargetAcceleration(state.getA());
-            power = controller.update(currentHeight, state.getV());
-        } else {
-            // just hold the position
-            controller.setTargetPosition(desiredHeight);
-            power = controller.update(currentHeight);
-        }
+        int state = rightLiftMotor.getCurrentPosition();
+        power = controller.calculate(state, desiredHeight);
+
         telemetry.addData("currentHeight", currentHeight);
         telemetry.update();
         setPower(power);

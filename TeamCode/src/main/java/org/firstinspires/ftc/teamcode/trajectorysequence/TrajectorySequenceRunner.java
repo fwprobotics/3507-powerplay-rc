@@ -195,6 +195,7 @@ public class TrajectorySequenceRunner {
         draw(fieldOverlay, currentTrajectorySequence, currentSegment, targetPose, poseEstimate);
 
         dashboard.sendTelemetryPacket(packet);
+       // DashboardUtil.drawRobot(fieldOverlay, new Pose2d(poseEstimate.getX(), poseEstimate.getY(), ));
 
         return driveSignal;
     }
@@ -261,6 +262,7 @@ public class TrajectorySequenceRunner {
 
         fieldOverlay.setStroke("#3F51B5");
         DashboardUtil.drawRobot(fieldOverlay, poseEstimate);
+        //DashboardUtil.drawRobot(fieldOverlay, );
     }
 
     public Pose2d getLastPoseError() {

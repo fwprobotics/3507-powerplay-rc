@@ -36,10 +36,10 @@ public class Arm2 {
         public static double arm_mid_back = 1;
         public static double arm_low_back = 1;
         public static  double arm_auto_dropoff = 0.5;
-        public static double stack_top = 0.4;
+        public static double stack_top = 0.24;
         public static double stack_difference = 0.04;
         public static double auto_speed_slow = 0.0005;
-        public static double auto_speed_fast = 0.005;
+        public static double auto_speed_fast = 0.01;
         public static double tolerance = 0.01;
         public static double teleop_speed = 0.003;
         public static double manual_speed = 0.003;
@@ -91,13 +91,13 @@ public class Arm2 {
         } else {
             armPosition = status.getFrontPosition();
         }
-        arm.setPosition(armPosition);
+     //   arm.setPosition(armPosition);
     }
 
 
     public void ArmStackControl (int cycle) {
         armPosition = ArmConstants.stack_top - (cycle* ArmConstants.stack_difference);
-        arm.setPosition(armPosition);
+      //  arm.setPosition(armPosition);
     }
 
     public void moveArm(double pos){
@@ -155,9 +155,9 @@ public class Arm2 {
     }
 
     public void ManualControl(double manualInput){
-        if (armPosition >= ArmConstants.manual_speed || manualInput >= 0.0) {
+     //   if (armPosition >= ArmConstants.manual_speed || manualInput >= 0.0) {
             armPosition -= ArmConstants.manual_speed * manualInput;
-        }
+     //   }
     }
 
     public void update() {
@@ -172,5 +172,25 @@ public class Arm2 {
         realTelemetry.addData("armPos", currentPos);
         realTelemetry.update();
     }
+
+    public void autoUpdate() {
+        double currentPos = arm.getPosition();
+        if (currentPos <= armPosition-ArmConstants.tolerance || currentPos >= armPosition+ArmConstants.tolerance) {
+            if (currentPos < armPosition) {
+                arm.setPosition(currentPos + ArmConstants.auto_speed_fast);
+            } else if (currentPos > armPosition) {
+                arm.setPosition(currentPos - ArmConstants.auto_speed_fast);
+            }
+        }
+        realTelemetry.addData("armPos", currentPos);
+        realTelemetry.update();
+    }
+
+    public boolean isBusy() {
+        double currentPos = arm.getPosition();
+        return currentPos <= armPosition-ArmConstants.tolerance || currentPos >= armPosition+ArmConstants.tolerance;
+    }
+
+
 
 }

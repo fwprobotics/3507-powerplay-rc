@@ -36,7 +36,7 @@ public class Teleop extends LinearOpMode {
     public void runOpMode() {
         drive = new SampleMecanumDrive(hardwareMap);
         drivetrain = new Drivetrain(this, hardwareMap, telemetry, drive);
-        lift = new Lift2(hardwareMap, telemetry);
+        lift = new Lift2(hardwareMap, telemetry, gamepad2);
         high = new ToggleButton(false);
         mid = new ToggleButton(false);
         low = new ToggleButton(false);
@@ -58,7 +58,7 @@ public class Teleop extends LinearOpMode {
 
             while (opModeIsActive()) {
 
-                drivetrain.JoystickMovement(gamepad1.left_stick_y, gamepad1.left_stick_x, gamepad1.right_stick_x, gamepad1.right_stick_y, gamepad1.left_bumper, gamepad1.x);
+                drivetrain.JoystickMovement(gamepad1.left_stick_y, gamepad1.left_stick_x, gamepad1.right_stick_x, gamepad1.right_stick_y, gamepad1.left_bumper, gamepad1.x, lift.getCurrentHeight() > 4);
                 high.toggle(gamepad2.dpad_right);
                 mid.toggle(gamepad2.dpad_up);
                 low.toggle(gamepad2.dpad_left);
@@ -66,7 +66,7 @@ public class Teleop extends LinearOpMode {
              //   flip.toggle(gamepad2.x);
                 clawToggle.toggle(gamepad2.right_bumper);
                 claw.TeleopControl(gamepad2.a, gamepad2.y, gamepad2.b);
-                lift.teleOpControl(gamepad2);
+                lift.teleOpControl();
 //                arm.ManualControl(gamepad2.left_stick_y);
               //  if (high.newPress() || mid.newPress() || low.newPress() || pickup.newPress() || flip.newPress()) {
                     arm.TeleopControl(pickup.newPress(), low.newPress(), mid.newPress(), high.newPress(), !gamepad2.left_bumper);

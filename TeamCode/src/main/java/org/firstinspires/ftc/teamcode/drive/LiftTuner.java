@@ -10,17 +10,17 @@ import org.firstinspires.ftc.teamcode.subsystems.Lift2;
 @TeleOp
 @Config
 public class LiftTuner extends LinearOpMode {
-    public static int height = 15;
+    public static int height = 10;
     public void runOpMode() {
-        Lift2 lift = new Lift2(hardwareMap, telemetry);
+        Lift2 lift = new Lift2(hardwareMap, telemetry, gamepad2);
 
         waitForStart();
         lift.setHeight(height);
         while (opModeIsActive()) {
             lift.update();
-            if (!lift.isBusy()) {
-                lift.setHeight(0);
-            }
+//            if (!lift.isBusy()) {
+//                lift.setHeight(0);
+//            }
         }
 
 
