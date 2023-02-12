@@ -161,6 +161,12 @@ public class FieldTrajectorySequence {
         return this;
     }
 
+    public FieldTrajectorySequence turn(double degrees) {
+        trajectory.turn(Math.toRadians(degrees));
+        return this;
+    }
+
+
     public FieldTrajectorySequence toPole(int poleX, int poleY, sides side, boolean backwardsDrop, boolean xfirst) {
         Pose2d targetPole = getTargetPole(poleX, poleY, side.heading(), backwardsDrop);
         return toLocation(targetPole, xfirst);

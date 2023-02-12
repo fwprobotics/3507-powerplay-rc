@@ -142,7 +142,7 @@ public class Lift2 {
 
     public void setPower(double power) {
         this.telemetry.addData("power", power);
-        if (power < 0 && rightLiftMotor.getCurrentPosition() <= offset && !gamepad2.right_bumper) {
+        if (power < 0 && rightLiftMotor.getCurrentPosition() <= offset && !gamepad2.right_bumper && !(isBusy() || gamepad2.right_stick_y != 0)) {
             leftLiftMotor.setPower(0);
             rightLiftMotor.setPower(0);
 

@@ -15,7 +15,7 @@ public class Claw {
 
     @Config
     public static class ClawPositions {
-        public static double open = 0.4;
+        public static double open = 0.3;
         public static double closed = 0.6;
         public static double drop = 0.45;
     }

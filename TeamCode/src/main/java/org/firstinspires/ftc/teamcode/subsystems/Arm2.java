@@ -34,15 +34,15 @@ public class Arm2 {
         public static double arm_high_front = 0.55;
         public static double arm_high_back = 0.9;
         public static double arm_mid_back = 1;
-        public static double arm_low_back = 1;
+        public static double arm_low_back = 0.9;
         public static  double arm_auto_dropoff = 0.5;
-        public static double stack_top = 0.24;
+        public static double stack_top = 0.25;
         public static double stack_difference = 0.04;
         public static double auto_speed_slow = 0.0005;
         public static double auto_speed_fast = 0.01;
         public static double tolerance = 0.01;
-        public static double teleop_speed = 0.003;
-        public static double manual_speed = 0.003;
+        public static double teleop_speed = 0.01;
+        public static double manual_speed = 0.006;
 
     }
 
@@ -94,10 +94,24 @@ public class Arm2 {
      //   arm.setPosition(armPosition);
     }
 
+    public void setArmPositionSync(armStatuses status, boolean Flip) {
+        if (Flip){
+            armPosition = status.getBackPosition();
+        } else {
+            armPosition = status.getFrontPosition();
+        }
+           arm.setPosition(armPosition);
+    }
+
 
     public void ArmStackControl (int cycle) {
         armPosition = ArmConstants.stack_top - (cycle* ArmConstants.stack_difference);
       //  arm.setPosition(armPosition);
+    }
+
+    public void ArmStackControlSync (int cycle) {
+        armPosition = ArmConstants.stack_top - (cycle* ArmConstants.stack_difference);
+        arm.setPosition(armPosition);
     }
 
     public void moveArm(double pos){

@@ -8,6 +8,7 @@ import com.acmerobotics.roadrunner.trajectory.constraints.TrajectoryVelocityCons
 
 
 import org.firstinspires.ftc.robotcore.external.Func;
+import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.trajectorysequence.EmptySequenceException;
 import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequence;
 import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequenceBuilder;
@@ -31,10 +32,11 @@ public class FieldTrajectorySequence {
         public static double coneoffset = 8;
         public static int clawlength = 4;
         public static double centeroffset = 0;
-        public static double stackoffset = 10;
-        public static double turnoffset = 0;
+        public static double stackoffset = 5;
+        public static double stackyoffset = -4;
+        public static double turnoffset = 0;//18;
         public static double parkingoffset = 3;
-        public static double parkingoffsetx = -3;
+        public static double parkingoffsetx = 4;
         public static double highconeoffset = 2;
     }
     public double border;
@@ -59,14 +61,16 @@ public class FieldTrajectorySequence {
     public Field.autoZones autoZone;
     public Pose2d lastPose;
     public TrajectorySequenceBuilder trajectory;
+    private Telemetry telemetry;
 
-    public FieldTrajectorySequence(TrajectorySequenceBuilder t, Pose2d startPose, double rW, double rL, Field.autoZones aZ) {
+    public FieldTrajectorySequence(TrajectorySequenceBuilder t, Pose2d startPose, double rW, double rL, Field.autoZones aZ, Telemetry realTelemetry) {
         //  super(startPose, baseVelConstraint, baseAccelConstraint, baseTurnConstraintMaxAngVel, baseTurnConstraintMaxAngAccel);;
         width = rW;
         length = rL;
         autoZone = aZ;
         trajectory = t;
         lastPose = startPose;
+        telemetry = realTelemetry;
         // Space on either side of the robot as it moves on a street
         border = (24-getDimension())/2;
     }
@@ -141,6 +145,11 @@ public class FieldTrajectorySequence {
         return this;
     }
 
+    public FieldTrajectorySequence turn(double degrees) {
+        trajectory.turn(Math.toRadians(degrees));
+        return this;
+    }
+
     public FieldTrajectorySequence toPole(int poleX, int poleY, sides side, boolean backwardsDrop, boolean xfirst) {
         Pose2d targetPole = getTargetPole(poleX, poleY, side.heading(), backwardsDrop);
         return toLocation(targetPole, xfirst);
@@ -204,8 +213,14 @@ public class FieldTrajectorySequence {
 
 
     public FieldTrajectorySequence toStack(boolean xfirst, int cycle) {
-        double x =  72-(getDistance(Arm2.ArmConstants.stack_top-(Arm2.ArmConstants.stack_difference*cycle), false));
-        double y = 12;
+        double x =  72-(getDistance(Arm2.ArmConstants.stack_top-(Arm2.ArmConstants.stack_difference*cycle), false)+FieldTrajContstants.stackoffset);
+        double y = 12+FieldTrajContstants.stackyoffset;
+        if (cycle == 1) {
+            x += 4;
+        }
+
+        telemetry.log().add("toStack "+x);
+        telemetry.update();
 
         switch (autoZone) {
             case REDRIGHT:
@@ -224,7 +239,7 @@ public class FieldTrajectorySequence {
         return  this;
     }
 
-    public FieldTrajectorySequence toStack(boolean xfirst, int cycle, int heading) {
+    public FieldTrajectorySequence toStack(boolean xfirst, int cycle, double heading) {
 
        double distance =         (getDistance(Arm2.ArmConstants.stack_top-(Arm2.ArmConstants.stack_difference*cycle), false));
         double x =  72;

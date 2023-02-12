@@ -95,8 +95,12 @@ public class Drivetrain {
         l.idle();
     }
 
+    public static double clamp(double val, double min, double max) {
+        return Math.max(min, Math.min(max, val));
+    }
+
     //This is the teleop drive formulas
-    public void JoystickMovement(double leftStickY, double leftStickX, double rightStickX, double rightstickY, boolean slowModeControl, boolean fieldRelativeToggle, boolean liftUp){
+    public void JoystickMovement(double leftStickY, double leftStickX, double rightStickX, double rightstickY, boolean slowModeControl, boolean fieldRelativeToggle, boolean liftUp, boolean boostButton){
 
 //        double RightStickAngle;
 
@@ -108,6 +112,7 @@ public class Drivetrain {
         double backRightVal;
 
         double slowModeMult = slowModeControl ? 0.3 : 1;
+        double boostModeMult = boostButton ? 1.5 : 1;
 
 
         if (fieldRelativeDrive.state()) {
@@ -157,10 +162,17 @@ public class Drivetrain {
             double LeftY = -leftStickY;
             double LeftX = -leftStickX;
             double RightX = -rightStickX;
-            frontLeftVal = cubeInput(((LeftY - RightX) - LeftX), TeleOpDTConstants.speedFactor);
-            frontRightVal = cubeInput(((LeftY + RightX) + LeftX), TeleOpDTConstants.speedFactor);
-            backLeftVal = cubeInput(((LeftY - RightX) + LeftX), TeleOpDTConstants.speedFactor);
-            backRightVal = cubeInput(((LeftY + RightX) - LeftX), TeleOpDTConstants.speedFactor);
+            if (slowModeControl) {
+                frontLeftVal = clamp(cubeInput(((LeftY - RightX) - LeftX), TeleOpDTConstants.speedFactor), -1, 1);
+                frontRightVal = clamp(cubeInput(((LeftY + RightX) + LeftX), TeleOpDTConstants.speedFactor), -1, 1);
+                backLeftVal = clamp(cubeInput(((LeftY - RightX) + LeftX), TeleOpDTConstants.speedFactor), -1, 1);
+                backRightVal = clamp(cubeInput(((LeftY + RightX) - LeftX), TeleOpDTConstants.speedFactor), -1, 1);
+            } else {
+                frontLeftVal = cubeInput(((LeftY - RightX) - LeftX), TeleOpDTConstants.speedFactor);
+                frontRightVal = cubeInput(((LeftY + RightX) + LeftX), TeleOpDTConstants.speedFactor);
+                backLeftVal = cubeInput(((LeftY - RightX) + LeftX), TeleOpDTConstants.speedFactor);
+                backRightVal = cubeInput(((LeftY + RightX) - LeftX), TeleOpDTConstants.speedFactor);
+            }
 //            drive.setWeightedDrivePower(
 //                    new Pose2d(
 //                            -leftStickY,
@@ -175,10 +187,10 @@ public class Drivetrain {
            // realTelemetry.addData("LeftY", LeftY);
         }
 
-        frontLeftDrive.setPower(frontLeftVal * slowModeMult * TeleOpDTConstants.power_modifier);
-        frontRightDrive.setPower(frontRightVal * slowModeMult * TeleOpDTConstants.power_modifier);
-        backLeftDrive.setPower(backLeftVal * slowModeMult * TeleOpDTConstants.power_modifier);
-        backRightDrive.setPower(backRightVal * slowModeMult * TeleOpDTConstants.power_modifier);
+        frontLeftDrive.setPower(frontLeftVal * slowModeMult * boostModeMult * TeleOpDTConstants.power_modifier);
+        frontRightDrive.setPower(frontRightVal * slowModeMult * boostModeMult* TeleOpDTConstants.power_modifier);
+        backLeftDrive.setPower(backLeftVal * slowModeMult * boostModeMult * TeleOpDTConstants.power_modifier);
+        backRightDrive.setPower(backRightVal * slowModeMult  * boostModeMult  * TeleOpDTConstants.power_modifier);
 
         realTelemetry.addData("Front Left", frontLeftDrive.getCurrentPosition());
         realTelemetry.addData("Back Left", backLeftDrive.getCurrentPosition());

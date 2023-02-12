@@ -23,7 +23,7 @@ public class Lift3 {
         FLOOR (0),
         LOW (0),
         MED (9),
-        HIGH (18);
+        HIGH (20);
         int height;
         liftLevels(int height) {
             this.height = height;
@@ -37,7 +37,7 @@ public class Lift3 {
 
     // the operating range of the elevator is restricted to [0, MAX_HEIGHT]
     public static double MAX_HEIGHT = 24; // in
-
+    private boolean running = false;
 
 
     public static double MAX_VEL = 25; // in/s
@@ -46,6 +46,10 @@ public class Lift3 {
     public static double kV = 1 / rpmToVelocity(getMaxRpm());
     public static double kA = 0;
     public static double kStatic = 0;
+
+    public static double p = 0.002;
+    public  static  double i = 0;
+    public  static  double d = 0;
 
 
 
@@ -59,7 +63,7 @@ public class Lift3 {
     private int offset;
     private Gamepad gamepad2;
 
-    public static PIDController controller = new PIDController(1.5, 0, 0.6);
+    public static PIDController controller = new PIDController(p, i, d);
 
     private static double encoderTicksToInches(int ticks) {
         return SPOOL_RADIUS * 2 * Math.PI * GEAR_RATIO * ticks / TICKS_PER_REV;
@@ -88,28 +92,29 @@ public class Lift3 {
         gamepad2 = gp;
         // if necessary, reverse the motor so "up" is positive
         // motor.setDirection(DcMotorSimple.Direction.REVERSE);
-
+        controller.setTolerance(80);
         // motor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
         // note: if the elevator is affected by a non-negligible constant force along the direction
         // of motion (e.g., gravity, kinetic friction, or a combination thereof), it may be
         // beneficial to compensate for it with a gravity feedforward;
         offset = rightLiftMotor.getCurrentPosition();
+        desiredHeight = offset;
 
         //set telemetry
         this.telemetry = telemetry;
     }
 
     public boolean isBusy() {
-        return Math.abs(rightLiftMotor.getCurrentPosition() - desiredHeight) > 50;
+        return !controller.atSetPoint();
     }
 
     public void setHeight(double height) {
         height = Math.min(Math.max(0, height), MAX_HEIGHT);
 
 
-
         this.desiredHeight = inchesToEncoderTicks(height);
+        controller.setSetPoint(desiredHeight);
     }
 
     public double getCurrentHeight() {
@@ -123,6 +128,7 @@ public class Lift3 {
         power = controller.calculate(state, desiredHeight);
 
         telemetry.addData("currentHeight", currentHeight);
+        telemetry.addData("pos err", controller.getPositionError());
         telemetry.update();
         setPower(power);
     }
@@ -156,6 +162,7 @@ public class Lift3 {
             update();
         } else {
                 setPower(-gamepad2.right_stick_y*power_modifier);
+                desiredHeight = rightLiftMotor.getCurrentPosition();
             }
         telemetry.addData("currentHeight", getCurrentHeight());
 

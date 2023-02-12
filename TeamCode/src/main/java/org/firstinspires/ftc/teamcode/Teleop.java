@@ -9,6 +9,7 @@ import org.firstinspires.ftc.teamcode.subsystems.Arm2;
 import org.firstinspires.ftc.teamcode.subsystems.Drivetrain;
 import org.firstinspires.ftc.teamcode.subsystems.Lift;
 import org.firstinspires.ftc.teamcode.subsystems.Lift2;
+import org.firstinspires.ftc.teamcode.subsystems.Lift3;
 import org.firstinspires.ftc.teamcode.subsystems.ToggleButton;
 import org.firstinspires.ftc.teamcode.subsystems.Arm;
 import org.firstinspires.ftc.teamcode.subsystems.Claw;
@@ -19,7 +20,7 @@ public class Teleop extends LinearOpMode {
 
     SampleMecanumDrive drive;
     Drivetrain drivetrain;
-    Lift2 lift;
+    Lift3 lift;
     ToggleButton high;
     ToggleButton mid;
     ToggleButton low;
@@ -36,7 +37,7 @@ public class Teleop extends LinearOpMode {
     public void runOpMode() {
         drive = new SampleMecanumDrive(hardwareMap);
         drivetrain = new Drivetrain(this, hardwareMap, telemetry, drive);
-        lift = new Lift2(hardwareMap, telemetry, gamepad2);
+        lift = new Lift3(hardwareMap, telemetry, gamepad2);
         high = new ToggleButton(false);
         mid = new ToggleButton(false);
         low = new ToggleButton(false);
@@ -58,7 +59,7 @@ public class Teleop extends LinearOpMode {
 
             while (opModeIsActive()) {
 
-                drivetrain.JoystickMovement(gamepad1.left_stick_y, gamepad1.left_stick_x, gamepad1.right_stick_x, gamepad1.right_stick_y, gamepad1.left_bumper, gamepad1.x, lift.getCurrentHeight() > 4);
+                drivetrain.JoystickMovement(gamepad1.left_stick_y, gamepad1.left_stick_x, gamepad1.right_stick_x, gamepad1.right_stick_y, gamepad1.left_bumper, gamepad1.x, lift.getCurrentHeight() > 4, gamepad1.right_bumper);
                 high.toggle(gamepad2.dpad_right);
                 mid.toggle(gamepad2.dpad_up);
                 low.toggle(gamepad2.dpad_left);

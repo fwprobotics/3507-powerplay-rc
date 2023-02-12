@@ -46,7 +46,7 @@ public class RightBlueLowPole extends LinearOpMode {
         Arm2 arm = new Arm2(this, hardwareMap, telemetry);
         Claw claw = new Claw(hardwareMap, telemetry);
         Pose2d startPose = new Pose2d(-32, 66, Math.toRadians(-90));
-        Field field = new Field(drive, 15, 16.5, Field.autoZones.BLUERIGHT);
+        Field field = new Field(drive, 15, 16.5, Field.autoZones.BLUERIGHT, telemetry);
         drive.setPoseEstimate(startPose);
         ElapsedTime matchTimer = new ElapsedTime();
         initCV();
