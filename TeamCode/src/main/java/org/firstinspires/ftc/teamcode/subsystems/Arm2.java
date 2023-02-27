@@ -36,8 +36,8 @@ public class Arm2 {
         public static double arm_mid_back = 1;
         public static double arm_low_back = 0.9;
         public static  double arm_auto_dropoff = 0.5;
-        public static double stack_top = 0.25;
-        public static double stack_difference = 0.04;
+        public static double stack_top = 0.23;
+        public static double stack_difference = 0.02;
         public static double auto_speed_slow = 0.0005;
         public static double auto_speed_fast = 0.01;
         public static double tolerance = 0.01;

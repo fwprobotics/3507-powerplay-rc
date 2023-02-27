@@ -77,8 +77,8 @@ public class LowPoleFSM2 extends LinearOpMode {
                 yMult = -1;
                 headingMult = 1;
                 side = -90;
-                xPoleOffset = -5;
-                yPoleOffset = 1.5;
+                xPoleOffset = -6;
+                yPoleOffset = 0;
                 turnHeadingMult = 1;
                 break;
             case REDLEFT:
@@ -129,7 +129,7 @@ public class LowPoleFSM2 extends LinearOpMode {
         if (isStopRequested()) return;
         telemetry.log().add("Started");
         claw.AutoControl(Claw.clawStatuses.CLOSED);
-        sleep(500);
+        sleep(100);
         matchTimer.reset();
         telemetry.log().add("Reading the signal");
         readSignal();
@@ -147,7 +147,7 @@ public class LowPoleFSM2 extends LinearOpMode {
 
         TrajectorySequence toStackStart = field.createFieldTrajectory(startSequence.end())
                 .turn(90*turnHeadingMult)//new Pose2d(clearPoseEnd.getX(), clearPoseEnd.getY(), Math.toRadians(0))
-                .toStack(false, 0)
+                .toStack(false, 0, new Pose2d(-7, -1))
                 .addMarker(() -> {
                     arm.ArmStackControl(0);
                 }, 0.5)
@@ -187,9 +187,9 @@ public class LowPoleFSM2 extends LinearOpMode {
                     if (!drive.isBusy() && !arm.isBusy()) {
                         state = STATE.TOSTACK;
                         drive.setAngle(Math.toRadians(90*headingMult));
-                        sleep(500);
+                        sleep(0);
                         claw.AutoControl(Claw.clawStatuses.OPEN);
-                        sleep(500);
+                        sleep(100);
 
                         drive.followTrajectorySequenceAsync(toStackStart);
                         cycle++;
@@ -203,9 +203,9 @@ public class LowPoleFSM2 extends LinearOpMode {
                         drive.setAngle(Math.toRadians(90*headingMult));
                         claw.AutoControl(Claw.clawStatuses.CLOSED);
 
-                        sleep(500);
-                        arm.setArmPosition(Arm2.armStatuses.LOW, false);
-                        sleep(500);
+                        sleep(0);
+                        arm.setArmPositionSync(Arm2.armStatuses.LOW, false);
+                        sleep(100);
                         int finalCycle = cycle;
                         toPole =
                                 field.createFieldTrajectory(drive.getPoseEstimate())
@@ -223,12 +223,12 @@ public class LowPoleFSM2 extends LinearOpMode {
                             state = STATE.TOSTACK;
                             drive.setAngle(Math.toRadians(90*headingMult));
                             claw.AutoControl(Claw.clawStatuses.DROP);
-                            sleep(500);
+                            sleep(100);
                             int finalCycle1 = cycle;
 
                             toStack = field.createFieldTrajectory(drive.getPoseEstimate())
                                     .turn(90*turnHeadingMult)
-                                    .toStack(false, 0)
+                                    .toStack(false, 0, new Pose2d(-5, -1))
                                     .addMarker(() -> {
                                         arm.ArmStackControl(finalCycle1);
                                     }, 0.5)
@@ -245,7 +245,7 @@ public class LowPoleFSM2 extends LinearOpMode {
                         } else {
                             state = STATE.PARK;
                             claw.AutoControl(Claw.clawStatuses.OPEN);
-                            sleep(500);
+                            sleep(100);
                             drive.followTrajectorySequenceAsync(toParking);
                         }
                     }
@@ -289,7 +289,7 @@ public class LowPoleFSM2 extends LinearOpMode {
         webcam.openCameraDeviceAsync(new OpenCvCamera.AsyncCameraOpenListener() {
             @Override
             public void onOpened() {
-                webcam.startStreaming(1920, 1080, OpenCvCameraRotation.UPRIGHT);
+                webcam.startStreaming(960, 720, OpenCvCameraRotation.UPRIGHT);
             }
             //320 240
 

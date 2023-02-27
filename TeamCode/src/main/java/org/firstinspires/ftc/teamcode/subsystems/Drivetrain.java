@@ -100,7 +100,7 @@ public class Drivetrain {
     }
 
     //This is the teleop drive formulas
-    public void JoystickMovement(double leftStickY, double leftStickX, double rightStickX, double rightstickY, boolean slowModeControl, boolean fieldRelativeToggle, boolean liftUp, boolean boostButton){
+    public void JoystickMovement(double leftStickY, double leftStickX, double rightStickX, double rightstickY, boolean slowModeControl, boolean fieldRelativeToggle, boolean boostButton){
 
 //        double RightStickAngle;
 

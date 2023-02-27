@@ -23,7 +23,7 @@ public class Lift3 {
         FLOOR (0),
         LOW (0),
         MED (9),
-        HIGH (20);
+        HIGH (19);
         int height;
         liftLevels(int height) {
             this.height = height;
@@ -92,7 +92,7 @@ public class Lift3 {
         gamepad2 = gp;
         // if necessary, reverse the motor so "up" is positive
         // motor.setDirection(DcMotorSimple.Direction.REVERSE);
-        controller.setTolerance(80);
+        controller.setTolerance(100);
         // motor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
         // note: if the elevator is affected by a non-negligible constant force along the direction
@@ -107,6 +107,7 @@ public class Lift3 {
 
     public boolean isBusy() {
         return !controller.atSetPoint();
+//        return (Math.abs(desiredHeight - getCurrentHeight()) > .02);
     }
 
     public void setHeight(double height) {
@@ -150,13 +151,16 @@ public class Lift3 {
     public void teleOpControl() {
         if (gamepad2.dpad_down) {
             setHeight(liftLevels.LOW.height);
-
+            update();
         } else if (gamepad2.dpad_left) {
             setHeight(liftLevels.LOW.height);
+            update();
         } else if (gamepad2.dpad_up) {
             setHeight(liftLevels.MED.height);
+            update();
         } else if (gamepad2.dpad_right) {
-            setHeight(liftLevels.HIGH.height+TeleopTopAdjust);
+            setHeight(liftLevels.HIGH.height);
+            update();
         }
         if (isBusy()) {
             update();
@@ -165,6 +169,8 @@ public class Lift3 {
                 desiredHeight = rightLiftMotor.getCurrentPosition();
             }
         telemetry.addData("currentHeight", getCurrentHeight());
+        telemetry.addData("Desired Height (ticks)", controller.getSetPoint());
+        telemetry.addData("Busy?", isBusy());
 
     }
 

@@ -32,11 +32,11 @@ public class FieldTrajectorySequence {
         public static double coneoffset = 8;
         public static int clawlength = 4;
         public static double centeroffset = 0;
-        public static double stackoffset = 5;
-        public static double stackyoffset = -4;
+        public static double stackoffset = 0;//5;
+        public static double stackyoffset = 0;
         public static double turnoffset = 0;//18;
         public static double parkingoffset = 3;
-        public static double parkingoffsetx = 4;
+        public static double parkingoffsetx = 0;
         public static double highconeoffset = 2;
     }
     public double border;
@@ -216,7 +216,33 @@ public class FieldTrajectorySequence {
         double x =  72-(getDistance(Arm2.ArmConstants.stack_top-(Arm2.ArmConstants.stack_difference*cycle), false)+FieldTrajContstants.stackoffset);
         double y = 12+FieldTrajContstants.stackyoffset;
         if (cycle == 1) {
-            x += 4;
+            x += 2;
+        }
+
+        telemetry.log().add("toStack "+x);
+        telemetry.update();
+
+        switch (autoZone) {
+            case REDRIGHT:
+                toLocation(new Pose2d(x, -y, Math.toRadians(0+FieldTrajContstants.turnoffset)), xfirst);
+                break;
+            case REDLEFT:
+                toLocation(new Pose2d(-x, -y, Math.toRadians(180-FieldTrajContstants.turnoffset)), xfirst);
+                break;
+            case BLUERIGHT:
+                toLocation(new Pose2d(-x, y, Math.toRadians(180-FieldTrajContstants.turnoffset)), xfirst);
+                break;
+            case BLUELEFT:
+                toLocation(new Pose2d(x, y, Math.toRadians(0+FieldTrajContstants.turnoffset)), xfirst);
+                break;
+        }
+        return  this;
+    }
+    public FieldTrajectorySequence toStack(boolean xfirst, int cycle, Pose2d offset) {
+        double x =  72-(getDistance(Arm2.ArmConstants.stack_top-(Arm2.ArmConstants.stack_difference*cycle), false)+FieldTrajContstants.stackoffset)+offset.getX();
+        double y = 12+FieldTrajContstants.stackyoffset+offset.getY();
+        if (cycle == 1) {
+            x += 2;
         }
 
         telemetry.log().add("toStack "+x);
